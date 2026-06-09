@@ -167,6 +167,16 @@
   }
 
   .filter-section-title {
+    display:none;
+    font-size: 9px;
+    letter-spacing: 0em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+.filters-section-title {
+  display:block;
     font-size: 9px;
     letter-spacing: 0em;
     text-transform: uppercase;
@@ -178,6 +188,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+    display:none
   }
 
   .tag-chip {
@@ -206,7 +217,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-width: 250px;
+    max-width: 280px;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 12px 10px;
@@ -261,12 +272,11 @@
   }
 
   .bar-line.on  { height: 100%; }
-  .bar-line.off { height: 40%; opacity: 0.2; }
+  .bar-line.off { height: 100%; opacity: 0.2; }
 
   /* Total pool bar */
   .bar-pool-wrap {
     margin-top: 4px;
-    display: none;
     padding-top: 10px;
     border-top: 1px solid var(--border);
   }
@@ -315,6 +325,25 @@
   .bar-look   .bar-line.on { background: hsl(145, 65%, 52%); }
   .bar-music  .bar-line.on { background: hsl(48,  90%, 58%); }
   .bar-enjoy  .bar-line.on { background: hsl(320, 80%, 62%); }
+
+  /* Mood bar colors */
+  .mood-thriller .bar-line.on { background: hsl(0,   70%, 58%); }
+  .mood-romcom   .bar-line.on { background: hsl(340, 75%, 65%); }
+  .mood-comedy   .bar-line.on { background: hsl(45,  90%, 58%); }
+  .mood-horror   .bar-line.on { background: hsl(280, 60%, 50%); }
+  .mood-drama    .bar-line.on { background: hsl(200, 65%, 55%); }
+
+  .mood-thriller .bar-line.off { background: hsl(0,   70%, 58%); }
+  .mood-romcom   .bar-line.off { background: hsl(340, 75%, 65%); }
+  .mood-comedy   .bar-line.off { background: hsl(45,  90%, 58%); }
+  .mood-horror   .bar-line.off { background: hsl(280, 60%, 50%); }
+  .mood-drama    .bar-line.off { background: hsl(200, 65%, 55%); }
+
+  .mood-thriller .bar-row-label { color: hsl(0,   70%, 65%); }
+  .mood-romcom   .bar-row-label { color: hsl(340, 75%, 70%); }
+  .mood-comedy   .bar-row-label { color: hsl(45,  90%, 64%); }
+  .mood-horror   .bar-row-label { color: hsl(280, 60%, 65%); }
+  .mood-drama    .bar-row-label { color: hsl(200, 65%, 65%); }
 
   .bar-story  .bar-line.off { background: hsl(270, 70%, 62%); }
   .bar-acting .bar-line.off { background: hsl(210, 75%, 62%); }
@@ -659,8 +688,10 @@
       <div class="tags-list" id="tags-list"></div>
     </div>
     <div>
-      <div class="filter-section-title">Ratings</div>
-      <div class="rating-sliders" id="rating-sliders"></div>
+      <div class="filter-section-title">Mood</div>
+      <div class="filters-section-title">What do you want to watch? </div>
+
+      <div class="rating-sliders" id="mood-sliders"></div>
     </div>
     <button class="reset-btn" onclick="resetFilters()">Reset all filters</button>
   </aside>
@@ -671,1111 +702,82 @@
     <div class="films-list hidden" id="films-list"></div>
     <div class="empty-state hidden" id="empty-state">
       <div class="empty-state-icon">◎</div>
-      <!--<div class="empty-state-text">No films match the current filters</div>-->
+      <div class="empty-state-text"></div>
     </div>
   </main>
 
 </div>
 
 <script>
-   const FILMS_DATA = [
-    {id: "the-secret-agent-2025", title: "The Secret Agent", year: 2026, director: "Kleber Mendonça Filho", cinematographer: "Christopher Blauvelt", script: "Kleber Mendonça Filho", budget: "$1.5m", length: "1h 50m", cast: ["Wagner Moura", "Robson Andrade", "Rubens Santos", "Licínio Januário", "Joálisson Cunha"], genre: ["Political Thriller", "Drama"], tags: ["Looks Great", "Festival Circuit"], ratings: { story: 85, acting: 52, lookFeel: 46, music: 92, enjoyment: 62 }, bme: [72, 68, 85], poster: "https://s3.amazonaws.com/nightjarprod/content/uploads/sites/309/2026/02/12115314/iLE2YOmeboeTDC7GlOp1dzh1VFo-scaled.jpg"},
-    {id: "weapons-2025", title: "Weapons", year: 2025, director: "Zach Cregger", cinematographer: "Larkin Seiple", script: "Zach Cregger", budget: "$38m", length: "2h 8m", cast: ["Josh Brolin", "Julia Garner", "Alden Ehrenreich", "Austin Abrams", "Benedict Wong"], genre: ["Horror", "Mystery"], tags: [], ratings: { story: 72, acting: 84, lookFeel: 83, music: 77, enjoyment: 78 }, bme: [75, 82, 88], poster: "tmdb:1078605"},
-    {id: "fatherland-2025", title: "Fatherland", year: 2025, director: "Paweł Pawlikowski", cinematographer: "Łukasz Żal", script: "Unknown", budget: "Unknown", length: "Unknown", cast: [], genre: ["Drama"], tags: [], ratings: { story: 0, acting: 0, lookFeel: 0, music: 0, enjoyment: 0 }, bme: [0, 0, 0], poster: "https://resizing.flixster.com/A7aSH840ZEhyCW_aE3rZhZIC9tU=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzY3OTQ5M2I3LTc0ZWUtNDUzNC05NTM0LTg4NmM4NzU4YmJlYS5qcGc="},
-    {id: "dune-part-two-2024", title: "Dune: Part Two", year: 2024, director: "Denis Villeneuve", cinematographer: "Greig Fraser", script: "Jon Spaihts, Denis Villeneuve", budget: "$190m", length: "2h 46m", cast: ["Timothée Chalamet", "Zendaya", "Rebecca Ferguson", "Austin Butler", "Florence Pugh"], genre: ["Science Fiction", "Epic"], tags: ["Looks Great"], ratings: { story: 84, acting: 86, lookFeel: 98, music: 95, enjoyment: 90 }, bme: [78, 88, 95], poster: "tmdb:693134"},
-    {id: "past-lives-2023", title: "Past Lives", year: 2023, director: "Celine Song", cinematographer: "Shabier Kirchner", script: "Celine Song", budget: "$12m", length: "1h 46m", cast: ["Greta Lee", "Teo Yoo", "John Magaro"], genre: ["Romance", "Drama"], tags: ["A24", "Debut Feature", "Murder Mystery May"], ratings: { story: 59, acting: 77, lookFeel: 83, music: 46, enjoyment: 80 }, bme: [70, 88, 96], poster: "https://imgs.search.brave.com/8xxWaN6MIlb0lBzhS8XJvVSgIe6TbrRofHKuTKRXrhY/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/Y2luZW1hdGVyaWFs/LmNvbS9wLzI5N3gv/c2JydXJrMG8vcGFz/dC1saXZlcy1tb3Zp/ZS1wb3N0ZXItbWQu/anBnP3Y9MTY3OTU5/MDMxOQ"},
-    {id: "the-holdovers-2023", title: "The Holdovers", year: 2023, director: "Alexander Payne", cinematographer: "Eigil Bryld", script: "David Hemingson", budget: "$28m", length: "2h 13m", cast: ["Paul Giamatti", "Da'Vine Joy Randolph", "Dominic Sessa"], genre: ["Comedy", "Drama"], tags: ["Murder Mystery May"], ratings: { story: 57, acting: 90, lookFeel: 86, music: 89, enjoyment: 79 }, bme: [60, 82, 90], poster: "https://imgs.search.brave.com/OiWuhW9Mvt_7zDEYbWo2grvAxkanqO_qHwuRpSxF8KU/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NDFsSWQwTWI0Tkwu/anBn"},
-    {id: "oppenheimer-2023", title: "Oppenheimer", year: 2023, director: "Christopher Nolan", cinematographer: "Hoyte van Hoytema", script: "Christopher Nolan", budget: "$100m", length: "3h 0m", cast: ["Cillian Murphy", "Robert Downey Jr.", "Emily Blunt"], genre: ["Biography", "Drama"], tags: ["Historical", "Epic"], ratings: { story: 94, acting: 96, lookFeel: 97, music: 98, enjoyment: 94 }, bme: [90, 96, 95], poster: "tmdb:872585"},
-    {id: "perfect-days-2023", title: "Perfect Days", year: 2023, director: "Wim Wenders", cinematographer: "Franz Lustig", script: "Wim Wenders, Takuma Takasaki", budget: "$5m", length: "2h 4m", cast: ["Koji Yakusho"], genre: ["Drama"], tags: ["Minimalist", "Slice of Life"], ratings: { story: 90, acting: 92, lookFeel: 95, music: 88, enjoyment: 91 }, bme: [88, 92, 91], poster: "https://s3.amazonaws.com/nightjarprod/content/uploads/sites/302/2024/03/25102615/tvUHVSTJV9ITON3oyHaWp7oaAc8-scaled.jpg"},
-    {id: "hell-of-a-summer-2023", title: "Hell of a Summer", year: 2023, director: "Fred Hechinger", cinematographer: "Andrew Wehde", script: "Fred Hechinger, Finn Wolfhard", budget: "$5m", length: "1h 34m", cast: ["Finn Wolfhard", "Fred Hechinger", "Tom Hanks"], genre: ["Horror", "Comedy"], tags: ["Slasher", "Camp"], ratings: { story: 74, acting: 78, lookFeel: 76, music: 72, enjoyment: 80 }, bme: [76, 80, 82], poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSka-IPiTEHg9XExHnkMtvgmjQQbOxFga73OrNT6VnegKsWDe4Ob_XukoEP4odWcB_OZFik&s=10" },
-    {id: "all-quiet-2022", title: "All Quiet on the Western Front", year: 2022, director: "Edward Berger", cinematographer: "James Friend", script: "Edward Berger, Lesley Paterson, Ian Stokell", budget: "$20m", length: "2h 28m", cast: ["Felix Kammerer", "Albrecht Schuch", "Aaron Hilmer"], genre: ["War", "Drama"], tags: ["Looks Great"], ratings: { story: 60, acting: 59, lookFeel: 53, music: 92, enjoyment: 51 }, bme: [88, 91, 60], poster: "https://images.squarespace-cdn.com/content/v1/6182f9a96b4e961f6d1c0d90/7db15295-77cd-4007-9b9f-11cff7f278c7/Poster.jpeg"},
-    {id: "aftersun-2022", title: "Aftersun", year: 2022, director: "Charlotte Wells", cinematographer: "Gregory Oke", script: "Charlotte Wells", budget: "$1m", length: "1h 41m", cast: ["Paul Mescal", "Frankie Corio"], genre: ["Drama"], tags: ["A24", "Debut Feature"], ratings: { story: 88, acting: 92, lookFeel: 79, music: 50, enjoyment: 82 }, bme: [65, 70, 94], poster: "https://imgs.search.brave.com/0Pz3ZW5Hj_qYeXMj9-mZKUCIB4PXrodLX28guS5Lm4k/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzVjL2U3/L2U4LzVjZTdlOGEw/NzdjNTI2ZDUyYjhh/YzdiMzNjMjg2MGFm/LmpwZw"},
-    {id: "tar-2022", title: "Tár", year: 2022, director: "Todd Field", cinematographer: "Florian Hoffmeister", script: "Todd Field", budget: "$35m", length: "2h 38m", cast: ["Cate Blanchett", "Noémie Merlant", "Nina Hoss"], genre: ["Drama", "Psychological Thriller"], tags: ["Festival Circuit"], ratings: { story: 72, acting: 47, lookFeel: 46, music: 50, enjoyment: 58 }, bme: [80, 75, 62], poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfUSn0z7hyTCoLe9N2ggKx3uWOWCTrrsrodHC8Tmo4rA&s"},
-    {id: "the-banshees-of-inisherin-2022", title: "The Banshees of Inisherin", year: 2022, director: "Martin McDonagh", cinematographer: "Ben Davis", script: "Martin McDonagh", budget: "$20m", length: "1h 54m", cast: ["Colin Farrell", "Brendan Gleeson", "Kerry Condon", "Barry Keoghan"], genre: ["Drama", "Comedy"], tags: ["Dark Comedy", "Irish"], ratings: { story: 90, acting: 95, lookFeel: 92, music: 91, enjoyment: 88 }, bme: [84, 92, 89], poster: "tmdb:674324"},
-    {id: "dune-part-one-2021", title: "Dune: Part One", year: 2021, director: "Denis Villeneuve", cinematographer: "Greig Fraser", script: "Jon Spaihts, Denis Villeneuve, Eric Roth", budget: "$165m", length: "2h 35m", cast: ["Timothée Chalamet", "Rebecca Ferguson", "Oscar Isaac", "Zendaya", "Josh Brolin"], genre: ["Science Fiction", "Epic"], tags: ["Looks Great"], ratings: { story: 80, acting: 83, lookFeel: 97, music: 96, enjoyment: 85 }, bme: [82, 78, 74], poster: "tmdb:438631"},
-    {id: "parasite-2019", title: "Parasite", year: 2019, director: "Bong Joon Ho", cinematographer: "Hong Kyung-pyo", script: "Bong Joon Ho, Han Jin-won", budget: "$11m", length: "2h 12m", cast: ["Song Kang-ho", "Choi Woo-shik", "Park So-dam", "Lee Sun-kyun"], genre: ["Thriller", "Drama"], tags: ["Class", "Korean"], ratings: { story: 98, acting: 94, lookFeel: 94, music: 90, enjoyment: 97 }, bme: [95, 99, 98], poster: "tmdb:496243"},
-    {id: "blade-runner-2049", title: "Blade Runner 2049", year: 2017, director: "Denis Villeneuve", cinematographer: "Roger Deakins", script: "Hampton Fancher, Michael Green", budget: "$150m", length: "2h 44m", cast: ["Ryan Gosling", "Harrison Ford", "Ana de Armas", "Jared Leto"], genre: ["Science Fiction", "Neo-Noir"], tags: ["Looks Great"], ratings: { story: 81, acting: 84, lookFeel: 99, music: 91, enjoyment: 83 }, bme: [72, 80, 88], poster: "tmdb:335984"},
-    {id: "phantom-thread-2017", title: "Phantom Thread", year: 2017, director: "Paul Thomas Anderson", cinematographer: "Paul Thomas Anderson", script: "Paul Thomas Anderson", budget: "$35m", length: "2h 10m", cast: ["Daniel Day-Lewis", "Vicky Krieps", "Lesley Manville"], genre: ["Drama", "Romance"], tags: ["Character Study", "Psychological"], ratings: { story: 88, acting: 95, lookFeel: 96, music: 94, enjoyment: 86 }, bme: [84, 90, 88], poster: "tmdb:400617"},
-    {id: "the-young-karl-marx-2017", title: "The Young Karl Marx", year: 2017, director: "Raoul Peck", cinematographer: "Kolja Brandt", script: "Raoul Peck, Pascal Bonitzer", budget: "$10m", length: "1h 58m", cast: ["August Diehl", "Stefan Konarske", "Vicky Krieps"], genre: ["Biography", "Drama", "History"], tags: ["Political", "Historical"], ratings: { story: 82, acting: 84, lookFeel: 80, music: 75, enjoyment: 80 }, bme: [78, 83, 80], poster: "https://m.media-amazon.com/images/M/MV5BYjYxODhhZjMtMzBlNy00NWFiLWJiYjctZWZhZTRjMmQ4OGRkXkEyXkFqcGc@._V1_.jpg"},
-    { id: "lady-bird-2017", title: "Lady Bird", year: 2017, director: "Greta Gerwig", cinematographer: "Sam Levy", script: "Greta Gerwig", budget: "$10m", length: "1h 34m", cast: ["Saoirse Ronan", "Laurie Metcalf", "Tracy Letts"], genre: ["Drama", "Comedy"], tags: ["Coming of Age", "Debut Feature"], ratings: { story: 90, acting: 93, lookFeel: 84, music: 80, enjoyment: 91 }, bme: [84, 90, 88], poster: "tmdb:391713" },
-    { id: "call-me-by-your-name-2017", title: "Call Me by Your Name", year: 2017, director: "Luca Guadagnino", cinematographer: "Sayombhu Mukdeeprom", script: "James Ivory", budget: "$3.5m", length: "2h 12m", cast: ["Timothée Chalamet", "Armie Hammer", "Michael Stuhlbarg"], genre: ["Drama", "Romance"], tags: ["Coming of Age"], ratings: { story: 88, acting: 93, lookFeel: 92, music: 91, enjoyment: 90 }, bme: [82, 90, 92], poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQVz99VpiiA_-oIZQYE9iA1zDOZb-azgqMjUjTwxrM2S-40NzTnjrhq1thpUI2tUmDMtMW8g&s=10" },
-    {id: "arrival-2016", title: "Arrival", year: 2016, director: "Denis Villeneuve", cinematographer: "Bradford Young", script: "Eric Heisserer", budget: "$47m", length: "1h 56m", cast: ["Amy Adams", "Jeremy Renner", "Forest Whitaker"], genre: ["Science Fiction", "Drama"], tags: ["Aliens", "Linguistics"], ratings: { story: 95, acting: 91, lookFeel: 94, music: 93, enjoyment: 93 }, bme: [90, 96, 94], poster: "tmdb:329865"},
-    {id: "the-revenant-2015", title: "The Revenant", year: 2015, director: "Alejandro G. Iñárritu", cinematographer: "Emmanuel Lubezki", script: "Mark L. Smith, Alejandro G. Iñárritu", budget: "$135m", length: "2h 36m", cast: ["Leonardo DiCaprio", "Tom Hardy"], genre: ["Adventure", "Drama"], tags: ["Survival", "Nature"], ratings: { story: 80, acting: 92, lookFeel: 99, music: 88, enjoyment: 85 }, bme: [85, 88, 87], poster: "tmdb:281957"},
-    { id: "gone-girl-2014", title: "Gone Girl", year: 2014, director: "David Fincher", cinematographer: "Jeff Cronenweth", script: "Gillian Flynn", budget: "$61m", length: "2h 29m", cast: ["Ben Affleck", "Rosamund Pike", "Neil Patrick Harris"], genre: ["Thriller", "Drama", "Mystery"], tags: ["Psychological", "Twists"], ratings: { story: 93, acting: 94, lookFeel: 91, music: 90, enjoyment: 93 }, bme: [88, 95, 94], poster: "tmdb:210577" },
-    { id: "inherent-vice-2014", title: "Inherent Vice", year: 2014, director: "Paul Thomas Anderson", cinematographer: "Robert Elswit", script: "Paul Thomas Anderson", budget: "$20m", length: "2h 28m", cast: ["Joaquin Phoenix", "Josh Brolin", "Owen Wilson"], genre: ["Comedy", "Crime", "Mystery"], tags: ["Neo-Noir", "Psychedelic"], ratings: { story: 80, acting: 88, lookFeel: 90, music: 87, enjoyment: 82 }, bme: [76, 83, 80], poster: "https://m.media-amazon.com/images/M/MV5BMmU3YjYzZWEtZDEzYy00YjA4LWI0YTUtY2RiMzVlYzZkZjg3XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg" },
-    {id: "american-hustle-2013", title: "American Hustle", year: 2013, director: "David O. Russell", cinematographer: "Linus Sandgren", script: "Eric Singer, David O. Russell", budget: "$40m", length: "2h 18m", cast: ["Christian Bale", "Amy Adams", "Bradley Cooper", "Jennifer Lawrence", "Jeremy Renner"], genre: ["Crime", "Drama"], tags: [], ratings: { story: 75, acting: 91, lookFeel: 79, music: 85, enjoyment: 82 }, bme: [80, 84, 70], poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTB_1gmVeAvwanj_2S6QEBXpD3KEq-Bw4Abmkhnrb-8pMTkNh7aBDjqwXV_lz8-iOglYyq3Q&s=10"},
-    {id: "her-2013", title: "Her", year: 2013, director: "Spike Jonze", cinematographer: "Hoyte van Hoytema", script: "Spike Jonze", budget: "$23m", length: "2h 6m", cast: ["Joaquin Phoenix", "Scarlett Johansson", "Amy Adams"], genre: ["Science Fiction", "Romance", "Drama"], tags: ["AI", "Loneliness"], ratings: { story: 91, acting: 93, lookFeel: 92, music: 90, enjoyment: 92 }, bme: [90, 95, 93], poster: "tmdb:152601"},
-    { id: "belle-2013", title: "Belle", year: 2013, director: "Amma Asante", cinematographer: "Ben Smithard", script: "Misan Sagay", budget: "$11m", length: "1h 45m", cast: ["Gugu Mbatha-Raw", "Tom Wilkinson", "Emily Watson"], genre: ["Drama", "Biography", "Romance"], tags: ["Historical", "Period"], ratings: { story: 84, acting: 88, lookFeel: 86, music: 80, enjoyment: 85 }, bme: [80, 86, 85], poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p10205013_p_v10_ad.jpg" },
-    {id: "the-master-2012", title: "The Master", year: 2012, director: "Paul Thomas Anderson", cinematographer: "Mihai Malaimare Jr.", script: "Paul Thomas Anderson", budget: "$32m", length: "2h 17m", cast: ["Joaquin Phoenix", "Philip Seymour Hoffman", "Amy Adams"], genre: ["Drama"], tags: ["Character Study", "Psychological"], ratings: { story: 82, acting: 97, lookFeel: 94, music: 90, enjoyment: 80 }, bme: [75, 85, 83], poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRHnt-HwsRWTyoshkLuGjZ96v0STsRz5e72x1cxQllo0MDcIdMOifvMGRSsdKKPunyXV3JRQ&s=10"},
-    {id: "lincoln-2012", title: "Lincoln", year: 2012, director: "Steven Spielberg", cinematographer: "Janusz Kamiński", script: "Tony Kushner", budget: "$65m", length: "2h 30m", cast: ["Daniel Day-Lewis", "Sally Field", "Tommy Lee Jones"], genre: ["Biography", "Drama"], tags: ["Historical", "Politics"], ratings: { story: 90, acting: 96, lookFeel: 88, music: 85, enjoyment: 87 }, bme: [85, 92, 88], poster: "tmdb:72976"},
-    { id: "this-is-40-2012", title: "This Is 40", year: 2012, director: "Judd Apatow", cinematographer: "Phedon Papamichael", script: "Judd Apatow", budget: "$35m", length: "2h 14m", cast: ["Paul Rudd", "Leslie Mann", "Megan Fox"], genre: ["Comedy", "Drama"], tags: [], ratings: { story: 72, acting: 80, lookFeel: 74, music: 78, enjoyment: 76 }, bme: [72, 76, 73], poster: "https://upload.wikimedia.org/wikipedia/en/e/eb/This_is_40.jpg" },
-    { id: "cabin-in-the-woods-2012", title: "The Cabin in the Woods", year: 2012, director: "Drew Goddard", cinematographer: "Peter Deming", script: "Joss Whedon, Drew Goddard", budget: "$30m", length: "1h 35m", cast: ["Kristen Connolly", "Chris Hemsworth", "Richard Jenkins", "Bradley Whitford"], genre: ["Horror", "Comedy", "Thriller"], tags: ["Meta", "Clever"], ratings: { story: 88, acting: 82, lookFeel: 80, music: 76, enjoyment: 90 }, bme: [82, 88, 92], poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOYEqbINfUYJ7VdJ-ky2ES7rD33J50G7jfbMRkMlbb7Tp4zGxy7B63NaTdoWy39DceRIB2SA&s=10" },
-    {id: "moneyball-2011", title: "Moneyball", year: 2011, director: "Bennett Miller", cinematographer: "Wally Pfister", script: "Steven Zaillian, Aaron Sorkin", budget: "$50m", length: "2h 13m", cast: ["Brad Pitt", "Jonah Hill", "Philip Seymour Hoffman"], genre: ["Drama", "Sport"], tags: ["True Story", "Analytics"], ratings: { story: 88, acting: 90, lookFeel: 85, music: 84, enjoyment: 89 }, bme: [85, 90, 90], poster: "tmdb:60308"},
-    {id: "tinker-tailor-soldier-spy-2011", title: "Tinker Tailor Soldier Spy", year: 2011, director: "Tomas Alfredson", cinematographer: "Hoyte van Hoytema", script: "Bridget O'Connor, Peter Straughan", budget: "$21m", length: "2h 7m", cast: ["Gary Oldman", "Colin Firth", "Tom Hardy"], genre: ["Drama", "Thriller"], tags: ["Spy", "Slow Burn"], ratings: { story: 88, acting: 92, lookFeel: 90, music: 82, enjoyment: 85 }, bme: [80, 88, 86], poster: "tmdb:49517"},
-    {id: "the-ghost-writer-2010", title: "The Ghost Writer", year: 2010, director: "Roman Polanski", cinematographer: "Pawel Edelman", script: "Robert Harris, Roman Polanski", budget: "$45m", length: "2h 8m", cast: ["Ewan McGregor", "Pierce Brosnan", "Olivia Williams"], genre: ["Thriller", "Mystery"], tags: ["Political", "Atmospheric", "Conspiracy"], ratings: { story: 89, acting: 87, lookFeel: 91, music: 84, enjoyment: 88 }, bme: [84, 90, 88], poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmfKiBdwNPRmQs89OjxXWK3aSWAOGXV3kTI52okrKFKQ&s"},
-    { id: "another-year-2010", title: "Another Year", year: 2010, director: "Mike Leigh", cinematographer: "Dick Pope", script: "Mike Leigh", budget: "$6m", length: "2h 9m", cast: ["Jim Broadbent", "Ruth Sheen", "Lesley Manville"], genre: ["Drama"], tags: ["British", "Naturalism"], ratings: { story: 87, acting: 94, lookFeel: 79, music: 70, enjoyment: 85 }, bme: [84, 88, 86], poster: "https://a.ltrbxd.com/resized/film-poster/2/1/1/5/2/21152-another-year-0-230-0-345-crop.jpg?v=5168cf0373" },
-    {id: "zodiac-2007", title: "Zodiac", year: 2007, director: "David Fincher", cinematographer: "Harris Savides", script: "James Vanderbilt", budget: "$65m", length: "2h 37m", cast: ["Jake Gyllenhaal", "Mark Ruffalo", "Robert Downey Jr."], genre: ["Crime", "Drama", "Thriller"], tags: ["Serial Killer", "Procedural"], ratings: { story: 92, acting: 91, lookFeel: 92, music: 84, enjoyment: 90 }, bme: [88, 94, 92], poster: "tmdb:1949"},
-    {id: "there-will-be-blood-2007", title: "There Will Be Blood", year: 2007, director: "Paul Thomas Anderson", cinematographer: "Robert Elswit", script: "Paul Thomas Anderson", budget: "$25m", length: "2h 38m", cast: ["Daniel Day-Lewis", "Paul Dano"], genre: ["Drama"], tags: ["Character Study", "Epic"], ratings: { story: 94, acting: 95, lookFeel: 96, music: 94, enjoyment: 92 }, bme: [90, 97, 95], poster: "tmdb:7345"},
-    {id: "volver-2006", title: "Volver", year: 2006, director: "Pedro Almodóvar", cinematographer: "José Luis Alcaine", script: "Pedro Almodóvar", budget: "$9m", length: "2h 1m", cast: ["Penélope Cruz", "Carmen Maura", "Lola Dueñas"], genre: ["Drama", "Comedy"], tags: ["Family", "Spanish"], ratings: { story: 91, acting: 94, lookFeel: 92, music: 84, enjoyment: 90 }, bme: [88, 93, 91], poster: "https://m.media-amazon.com/images/M/MV5BMjA0NTUxMjY1OV5BMl5BanBnXkFtZTcwNjI2OTMzMQ@@._V1_FMjpg_UX1000_.jpg"},
-    {id: "birth-2004", title: "Birth", year: 2004, director: "Jonathan Glazer", cinematographer: "Harris Savides", script: "Milo Addica, Jean-Claude Carrière, Jonathan Glazer", budget: "$20m", length: "1h 40m", cast: ["Nicole Kidman", "Cameron Bright", "Danny Huston", "Lauren Bacall"], genre: ["Drama", "Psychological Thriller"], tags: ["Looks Great"], ratings: { story: 80, acting: 88, lookFeel: 92, music: 87, enjoyment: 79 }, bme: [74, 82, 76], poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjJyzanLKpyVGQeilXEp411wzKGxrECdM3OF604aucjt9rBN-gmbTtMkAvjIFQdWUC7C2S7Q&s=10"},
-    {id: "the-descendants-2011",  "title": "The Descendants", "year": 2011, "director": "Alexander Payne", cinematographer: "Phedon Papamichael", script: "Alexander Payne, Nat Faxon, Jim Rash", budget: "$20m", length: "1h 55m", cast: ["George Clooney", "Shailene Woodley", "Beau Bridges", "Judy Greer"], genre: ["Drama", "Comedy"], tags: ["Family", "Hawaii", "Bittersweet"], ratings: { story: 89, acting: 91, lookFeel: 88, music: 82, enjoyment: 87 }, bme: [85, 90, 88], poster: "tmdb:65057" },
-    {id: "the-aviator-2004", title: "The Aviator", year: 2004, director: "Martin Scorsese", cinematographer: "Robert Richardson", script: "John Logan", budget: "$110m", length: "2h 50m", cast: ["Leonardo DiCaprio", "Cate Blanchett", "Kate Beckinsale"], genre: ["Biography", "Drama"], tags: ["Epic", "Character Study"], ratings: { story: 85, acting: 90, lookFeel: 93, music: 88, enjoyment: 86 }, bme: [80, 88, 90], poster: "tmdb:2567"},
-    {id: "collateral-2004", title: "Collateral", year: 2004, director: "Michael Mann", cinematographer: "Dion Beebe, Paul Cameron", script: "Stuart Beattie", budget: "$65m", length: "2h 0m", cast: ["Tom Cruise", "Jamie Foxx", "Jada Pinkett Smith"], genre: ["Crime", "Thriller"], tags: ["Neo-Noir", "Night"], ratings: { story: 87, acting: 91, lookFeel: 95, music: 90, enjoyment: 92 }, bme: [86, 92, 93], poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSS1ijhgF3bdzGInhe9LtU6KC1RSQ7v5uwUqoj0Bs_aR1cAVACFsexW7Qim638hjXG2Wsh0&s=10"},
-    {id: "memories-of-murder-2003", title: "Memories of Murder", year: 2003, director: "Bong Joon Ho", cinematographer: "Kim Hyung-ku", script: "Bong Joon Ho, Shim Sung-bo", budget: "$2.8m", length: "2h 11m", cast: ["Song Kang-ho", "Kim Sang-kyung", "Kim Roi-ha"], genre: ["Crime", "Drama", "Thriller"], tags: ["Serial Killer", "Korean"], ratings: { story: 96, acting: 93, lookFeel: 91, music: 84, enjoyment: 94 }, bme: [92, 97, 95], poster: "tmdb:11423"},
-    {id: "mission-impossible-2-2000", title: "Mission: Impossible II", year: 2000, director: "John Woo", cinematographer: "Jeffrey L. Kimball", script: "Robert Towne", budget: "$125m", length: "2h 3m", cast: ["Tom Cruise", "Thandiwe Newton", "Dougray Scott"], genre: ["Action", "Thriller"], tags: ["Stylized", "Action"], ratings: { story: 65, acting: 70, lookFeel: 85, music: 80, enjoyment: 75 }, bme: [70, 75, 78], poster: "tmdb:955"},
-    {id: "last-resort-2000", title: "Last Resort", year: 2000, director: "Pawel Pawlikowski", cinematographer: "Ryszard Lenczewski", script: "Pawel Pawlikowski, Rowan Joffe", budget: "$1m", length: "1h 13m", cast: ["Dina Korzun", "Paddy Considine"], genre: ["Drama"], tags: ["Immigration", "Indie"], ratings: { story: 85, acting: 87, lookFeel: 82, music: 75, enjoyment: 83 }, bme: [82, 86, 84], poster: "https://m.media-amazon.com/images/M/MV5BNGRhOTE3OTMtNzQzMC00ZGZmLTg3MWQtOTY1ZDdhZjA0MjJmXkEyXkFqcGc@._V1_FMjpg_UY2480_.jpg"},
-    {id: "the-insider-1999", title: "The Insider", year: 1999, director: "Michael Mann", cinematographer: "Dante Spinotti", script: "Eric Roth, Michael Mann", budget: "$90m", length: "2h 37m", cast: ["Al Pacino", "Russell Crowe", "Christopher Plummer"], genre: ["Drama", "Biography"], tags: ["Journalism", "Corporate"], ratings: { story: 93, acting: 94, lookFeel: 88, music: 85, enjoyment: 89 }, bme: [85, 93, 91], poster: "https://m.media-amazon.com/images/S/pv-target-images/15adbbd778daa2777e7d9bb2124fee89505a980c7821534197bcd869322ca9f6.jpg"},
-    {id: "croupier-1998", title: "Croupier", year: 1998, director: "Mike Hodges", cinematographer: "Michael Garfath", script: "Paul Mayersberg", budget: "$1m", length: "1h 34m", cast: ["Clive Owen", "Kate Hardie", "Alex Kingston"], genre: ["Crime", "Drama", "Thriller"], tags: ["Neo-Noir", "Gambling"], ratings: { story: 86, acting: 88, lookFeel: 84, music: 76, enjoyment: 85 }, bme: [82, 87, 85], poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p25244_p_v8_ac.jpg"},
-    {id: "men-in-black-1997", title: "Men in Black", year: 1997, director: "Barry Sonnenfeld", cinematographer: "Donald Peterman", script: "Ed Solomon", budget: "$90m", length: "1h 38m", cast: ["Will Smith", "Tommy Lee Jones", "Linda Fiorentino"], genre: ["Science Fiction", "Comedy"], tags: ["Aliens", "Blockbuster"], ratings: { story: 80, acting: 82, lookFeel: 88, music: 85, enjoyment: 88 }, bme: [82, 86, 88], poster: "tmdb:607"},
-    {id: "breakdown-1997", title: "Breakdown", year: 1997, director: "Jonathan Mostow", cinematographer: "Douglas Milsome", script: "Jonathan Mostow, Sam Montgomery", budget: "$36m", length: "1h 33m", cast: ["Kurt Russell", "J.T. Walsh", "Kathleen Quinlan"], genre: ["Thriller", "Crime"], tags: ["Road Movie", "Tense"], ratings: { story: 82, acting: 84, lookFeel: 80, music: 74, enjoyment: 89 }, bme: [84, 88, 90], poster: "https://m.media-amazon.com/images/M/MV5BMjhiODJmOWQtNGYwZi00NjFmLWFiNTMtZjZhNTJiMTJmNjhjXkEyXkFqcGc@._V1_.jpg"},
-    {id: "two-days-in-the-valley-1996", title: "Two Days in the Valley", year: 1996, director: "John Herzfeld", cinematographer: "Oliver Wood", script: "John Herzfeld", budget: "$11m", length: "1h 44m", cast: ["Danny Aiello", "Jeff Daniels", "James Spader", "Charlize Theron"], genre: ["Crime", "Comedy", "Thriller"], tags: ["Ensemble", "Neo-Noir"], ratings: { story: 78, acting: 83, lookFeel: 81, music: 76, enjoyment: 82 }, bme: [78, 82, 83], poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p18510_p_v8_aa.jpg" },
-    { id: "secrets-and-lies-1996", title: "Secrets & Lies", year: 1996, director: "Mike Leigh", cinematographer: "Dick Pope", script: "Mike Leigh", budget: "$4.5m", length: "2h 22m", cast: ["Timothy Spall", "Phyllis Logan", "Brenda Blethyn"], genre: ["Drama"], tags: ["British", "Naturalism"], ratings: { story: 90, acting: 95, lookFeel: 80, music: 72, enjoyment: 87 }, bme: [82, 91, 93], poster: "https://m.media-amazon.com/images/S/pv-target-images/005d1701ab2ada9dbae4707dcf5d5bda0b78d7f80eecf27b2a4c38732066fc68.jpg" },
-    { id: "the-last-seduction-1994", title: "The Last Seduction", year: 1994, director: "John Dahl", cinematographer: "Jeffrey Jur", script: "Steve Barancik", budget: "$2.5m", length: "1h 50m", cast: ["Linda Fiorentino", "Peter Berg", "Bill Pullman"], genre: ["Crime", "Thriller", "Neo-Noir"], tags: ["Neo-Noir", "Femme Fatale"], ratings: { story: 88, acting: 91, lookFeel: 82, music: 74, enjoyment: 90 }, bme: [84, 90, 92], poster: "https://m.media-amazon.com/images/M/MV5BZjE1YmMwNmYtNDQ2MS00ZTJhLWJhNGEtN2M3ZjdmYTAzNWQ2XkEyXkFqcGc@._V1_.jpg" },
-    {id: "frantic-1988", title: "Frantic", year: 1988, director: "Roman Polanski", cinematographer: "Witold Sobocinski", script: "Roman Polanski, Gérard Brach", budget: "$20m", length: "2h 0m", cast: ["Harrison Ford", "Emmanuelle Seigner", "Betty Buckley"], genre: ["Thriller", "Mystery"], tags: ["Conspiracy", "Paris"], ratings: { story: 84, acting: 85, lookFeel: 83, music: 78, enjoyment: 86 }, bme: [80, 85, 86], poster: "https://upload.wikimedia.org/wikipedia/en/3/36/Frantic_%28movie_poster%29.jpg"},
-    {id: "dune-1984", title: "Dune", year: 1984, director: "David Lynch", cinematographer: "Freddie Francis", script: "David Lynch", budget: "$40m", length: "2h 17m", cast: ["Kyle MacLachlan", "Francesca Annis", "Patrick Stewart", "Sting"], genre: ["Science Fiction", "Epic"], tags: [], ratings: { story: 62, acting: 65, lookFeel: 74, music: 80, enjoyment: 60 }, bme: [70, 55, 58], poster: "tmdb:841"},
-    {id: "my-dinner-with-andre-1981", title: "My Dinner with Andre", year: 1981, director: "Louis Malle", cinematographer: "Jeri Sopanen", script: "Wallace Shawn, André Gregory", budget: "$0.5m", length: "1h 50m", cast: ["Wallace Shawn", "André Gregory"], genre: ["Drama", "Comedy"], tags: ["Conversation", "Philosophical", "Minimalist"], ratings: { story: 92, acting: 94, lookFeel: 78, music: 60, enjoyment: 88 }, bme: [86, 93, 89], poster: "tmdb:25468"},
-    {id: "blade-runner-1982", title: "Blade Runner", year: 1982, director: "Ridley Scott", cinematographer: "Jordan Cronenweth", script: "Hampton Fancher, David Peoples", budget: "$28m", length: "1h 57m", cast: ["Harrison Ford", "Rutger Hauer", "Sean Young", "Edward James Olmos"], genre: ["Science Fiction", "Neo-Noir"], tags: ["Looks Great"], ratings: { story: 78, acting: 82, lookFeel: 98, music: 95, enjoyment: 86 }, bme: [88, 74, 91], poster: "tmdb:78"},
-    {id: "chinatown-1974", title: "Chinatown", year: 1974, director: "Roman Polanski", cinematographer: "John A. Alonzo", script: "Robert Towne", budget: "$6m", length: "2h 10m", cast: ["Jack Nicholson", "Faye Dunaway", "John Huston"], genre: ["Crime", "Drama", "Mystery"], tags: ["Classic", "Neo-Noir"], ratings: { story: 95, acting: 94, lookFeel: 92, music: 90, enjoyment: 93 }, bme: [90, 96, 94], poster: "tmdb:829"},
-    { id: "the-apartment-1960", title: "The Apartment", year: 1960, director: "Billy Wilder", cinematographer: "Joseph LaShelle", script: "Billy Wilder, I.A.L. Diamond", budget: "$3m", length: "2h 5m", cast: ["Jack Lemmon", "Shirley MacLaine", "Fred MacMurray"], genre: ["Comedy", "Drama", "Romance"], tags: ["Classic", "Black & White"], ratings: { story: 95, acting: 96, lookFeel: 91, music: 86, enjoyment: 97 }, bme: [88, 94, 97], poster: "https://upload.wikimedia.org/wikipedia/commons/8/8b/The_Apartment_%281960_poster%29.jpg" },
-  {
-    "id": "moonlight-2016",
-    "title": "Moonlight",
-    "year": 2016,
-    "director": "Barry Jenkins",
-    "cinematographer": "James Laxton",
-    "script": "Barry Jenkins",
-    "budget": "$4m",
-    "length": "1h 51m",
-    "cast": ["Trevante Rhodes", "Mahershala Ali", "Naomie Harris"],
-    "genre": ["Drama"],
-    "tags": ["Coming of Age", "Identity"],
-    "ratings": { "story": 97, "acting": 96, "lookFeel": 95, "music": 93, "enjoyment": 94 },
-    "bme": [94, 98, 95],
-    "poster": "tmdb:376867"
-  },
-  {
-    "id": "lady-bird-2017",
-    "title": "Lady Bird",
-    "year": 2017,
-    "director": "Greta Gerwig",
-    "cinematographer": "Sam Levy",
-    "script": "Greta Gerwig",
-    "budget": "$10m",
-    "length": "1h 34m",
-    "cast": ["Saoirse Ronan", "Laurie Metcalf", "Lucas Hedges"],
-    "genre": ["Drama", "Comedy"],
-    "tags": ["Coming of Age", "Family"],
-    "ratings": { "story": 93, "acting": 95, "lookFeel": 88, "music": 84, "enjoyment": 92 },
-    "bme": [90, 94, 92],
-    "poster": "tmdb:391713"
-  },
-  {
-    "id": "ex-machina-2015",
-    "title": "Ex Machina",
-    "year": 2015,
-    "director": "Alex Garland",
-    "cinematographer": "Rob Hardy",
-    "script": "Alex Garland",
-    "budget": "$15m",
-    "length": "1h 48m",
-    "cast": ["Domhnall Gleeson", "Alicia Vikander", "Oscar Isaac"],
-    "genre": ["Science Fiction", "Thriller"],
-    "tags": ["AI", "Minimalist"],
-    "ratings": { "story": 74, "acting": 91, "lookFeel": 95, "music": 89, "enjoyment": 93 },
-    "bme": [92, 95, 94],
-    "poster": "tmdb:264660"
-  },
-  {
-    "id": "the-lighthouse-2019",
-    "title": "The Lighthouse",
-    "year": 2019,
-    "director": "Robert Eggers",
-    "cinematographer": "Jarin Blaschke",
-    "script": "Robert Eggers, Max Eggers",
-    "budget": "$11m",
-    "length": "1h 49m",
-    "cast": ["Robert Pattinson", "Willem Dafoe"],
-    "genre": ["Drama", "Horror"],
-    "tags": ["Psychological", "Black and White"],
-    "ratings": { "story": 88, "acting": 98, "lookFeel": 99, "music": 85, "enjoyment": 87 },
-    "bme": [86, 94, 89],
-    "poster": "tmdb:503919"
-  },
-  {
-    "id": "uncut-gems-2019",
-    "title": "Uncut Gems",
-    "year": 2019,
-    "director": "Josh Safdie, Benny Safdie",
-    "cinematographer": "Darius Khondji",
-    "script": "Ronald Bronstein, Josh Safdie, Benny Safdie",
-    "budget": "$19m",
-    "length": "2h 15m",
-    "cast": ["Adam Sandler", "Julia Fox", "Lakeith Stanfield"],
-    "genre": ["Crime", "Thriller"],
-    "tags": ["Anxiety", "New York"],
-    "ratings": { "story": 91, "acting": 95, "lookFeel": 92, "music": 94, "enjoyment": 90 },
-    "bme": [89, 95, 91],
-    "poster": "tmdb:473033"
-  },
-  {
-    "id": "hereditary-2018",
-    "title": "Hereditary",
-    "year": 2018,
-    "director": "Ari Aster",
-    "cinematographer": "Pawel Pogorzelski",
-    "script": "Ari Aster",
-    "budget": "$10m",
-    "length": "2h 7m",
-    "cast": ["Toni Collette", "Alex Wolff", "Milly Shapiro"],
-    "genre": ["Horror", "Drama"],
-    "tags": ["Psychological", "Family"],
-    "ratings": { "story": 90, "acting": 96, "lookFeel": 94, "music": 88, "enjoyment": 89 },
-    "bme": [88, 93, 90],
-    "poster": "tmdb:493922"
-  },
-  {
-    "id": "midsommar-2019",
-    "title": "Midsommar",
-    "year": 2019,
-    "director": "Ari Aster",
-    "cinematographer": "Pawel Pogorzelski",
-    "script": "Ari Aster",
-    "budget": "$9m",
-    "length": "2h 28m",
-    "cast": ["Florence Pugh", "Jack Reynor", "Will Poulter"],
-    "genre": ["Horror", "Drama"],
-    "tags": ["Folk Horror", "Daylight"],
-    "ratings": { "story": 87, "acting": 91, "lookFeel": 97, "music": 89, "enjoyment": 88 },
-    "bme": [86, 92, 89],
-    "poster": "tmdb:530385"
-  },
-  {
-    "id": "the-witch-2015",
-    "title": "The Witch",
-    "year": 2015,
-    "director": "Robert Eggers",
-    "cinematographer": "Jarin Blaschke",
-    "script": "Robert Eggers",
-    "budget": "$4m",
-    "length": "1h 32m",
-    "cast": ["Anya Taylor-Joy", "Ralph Ineson", "Kate Dickie"],
-    "genre": ["Horror", "Drama"],
-    "tags": ["Folk Horror", "Atmospheric"],
-    "ratings": { "story": 88, "acting": 90, "lookFeel": 96, "music": 84, "enjoyment": 85 },
-    "bme": [84, 90, 86],
-    "poster": "tmdb:310131"
-  },
-  {
-    "id": "the-florida-project-2017",
-    "title": "The Florida Project",
-    "year": 2017,
-    "director": "Sean Baker",
-    "cinematographer": "Alexis Zabe",
-    "script": "Sean Baker, Chris Bergoch",
-    "budget": "$2m",
-    "length": "1h 51m",
-    "cast": ["Brooklynn Prince", "Willem Dafoe", "Bria Vinaite"],
-    "genre": ["Drama"],
-    "tags": ["Childhood", "Slice of Life"],
-    "ratings": { "story": 93, "acting": 94, "lookFeel": 92, "music": 78, "enjoyment": 91 },
-    "bme": [90, 95, 92],
-    "poster": "https://m.media-amazon.com/images/M/MV5BNDBhM2MxYjAtMWFiYy00MWMwLThkMDYtN2M1ZWY3NjkxNGExXkEyXkFqcGc@._V1_.jpg"
-  },
-  {
-    "id": "minari-2020",
-    "title": "Minari",
-    "year": 2020,
-    "director": "Lee Isaac Chung",
-    "cinematographer": "Lachlan Milne",
-    "script": "Lee Isaac Chung",
-    "budget": "$2m",
-    "length": "1h 55m",
-    "cast": ["Steven Yeun", "Han Ye-ri", "Youn Yuh-jung"],
-    "genre": ["Drama"],
-    "tags": ["Family", "Immigrant"],
-    "ratings": { "story": 91, "acting": 94, "lookFeel": 89, "music": 82, "enjoyment": 90 },
-    "bme": [89, 93, 91],
-    "poster": "tmdb:615643"
-  },
-  {
-    "id": "the-green-knight-2021",
-    "title": "The Green Knight",
-    "year": 2021,
-    "director": "David Lowery",
-    "cinematographer": "Andrew Droz Palermo",
-    "script": "David Lowery",
-    "budget": "$15m",
-    "length": "2h 10m",
-    "cast": ["Dev Patel", "Alicia Vikander", "Joel Edgerton"],
-    "genre": ["Fantasy", "Drama"],
-    "tags": ["Mythic", "Atmospheric"],
-    "ratings": { "story": 84, "acting": 89, "lookFeel": 98, "music": 90, "enjoyment": 84 },
-    "bme": [82, 90, 85],
-    "poster": "tmdb:559907"
-  },
-  {
-    "id": "civil-war-2024",
-    "title": "Civil War",
-    "year": 2024,
-    "director": "Alex Garland",
-    "cinematographer": "Rob Hardy",
-    "script": "Alex Garland",
-    "budget": "$50m",
-    "length": "1h 49m",
-    "cast": ["Kirsten Dunst", "Cailee Spaeny", "Wagner Moura"],
-    "genre": ["Drama", "Thriller"],
-    "tags": ["War", "Political"],
-    "ratings": { "story": 87, "acting": 88, "lookFeel": 93, "music": 84, "enjoyment": 89 },
-    "bme": [86, 90, 89],
-    "poster": "tmdb:929590"
-  },
-  {
-    "id": "bodies-bodies-bodies-2022",
-    "title": "Bodies Bodies Bodies",
-    "year": 2022,
-    "director": "Halina Reijn",
-    "cinematographer": "Jasper Wolf",
-    "script": "Sarah DeLappe",
-    "budget": "$3m",
-    "length": "1h 34m",
-    "cast": ["Amandla Stenberg", "Maria Bakalova", "Pete Davidson"],
-    "genre": ["Comedy", "Horror"],
-    "tags": ["Satire", "Gen Z"],
-    "ratings": { "story": 79, "acting": 84, "lookFeel": 85, "music": 82, "enjoyment": 86 },
-    "bme": [80, 85, 87],
-    "poster": "tmdb:520023"
-  },
-  {
-    "id": "marcel-the-shell-with-shoes-on-2021",
-    "title": "Marcel the Shell with Shoes On",
-    "year": 2021,
-    "director": "Dean Fleischer Camp",
-    "cinematographer": "Bianca Cline",
-    "script": "Dean Fleischer Camp, Jenny Slate, Nick Paley",
-    "budget": "$1m",
-    "length": "1h 30m",
-    "cast": ["Jenny Slate", "Isabella Rossellini", "Dean Fleischer Camp"],
-    "genre": ["Animation", "Comedy", "Drama"],
-    "tags": ["Whimsical", "Heartfelt"],
-    "ratings": { "story": 91, "acting": 88, "lookFeel": 90, "music": 83, "enjoyment": 93 },
-    "bme": [90, 93, 94],
-    "poster": "tmdb:869626"
-  },
-  {
-    "id": "the-iron-claw-2023",
-    "title": "The Iron Claw",
-    "year": 2023,
-    "director": "Sean Durkin",
-    "cinematographer": "Mátyás Erdély",
-    "script": "Sean Durkin",
-    "budget": "$16m",
-    "length": "2h 12m",
-    "cast": ["Zac Efron", "Jeremy Allen White", "Harris Dickinson"],
-    "genre": ["Drama", "Sport"],
-    "tags": ["Family", "Tragedy"],
-    "ratings": { "story": 92, "acting": 94, "lookFeel": 88, "music": 82, "enjoyment": 91 },
-    "bme": [90, 94, 92],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKA7vUyTuDB7pyVDAyfjgR6nnsWgwa9IsNGKsT7-ZIZV3RpGn91ytlnLIOggdGv1qOIMN2&s=10"
-  },
-  {
-    "id": "beau-is-afraid-2023",
-    "title": "Beau Is Afraid",
-    "year": 2023,
-    "director": "Ari Aster",
-    "cinematographer": "Pawel Pogorzelski",
-    "script": "Ari Aster",
-    "budget": "$35m",
-    "length": "2h 59m",
-    "cast": ["Joaquin Phoenix", "Patti LuPone", "Nathan Lane"],
-    "genre": ["Drama", "Comedy", "Horror"],
-    "tags": ["Surreal", "Anxiety"],
-    "ratings": { "story": 76, "acting": 94, "lookFeel": 96, "music": 88, "enjoyment": 74 },
-    "bme": [70, 82, 76],
-    "poster": "tmdb:798286"
-  },
-  {
-    "id": "eighth-grade-2018",
-    "title": "Eighth Grade",
-    "year": 2018,
-    "director": "Bo Burnham",
-    "cinematographer": "Andrew Wehde",
-    "script": "Bo Burnham",
-    "budget": "$2m",
-    "length": "1h 33m",
-    "cast": ["Elsie Fisher", "Josh Hamilton"],
-    "genre": ["Drama", "Comedy"],
-    "tags": ["Coming of Age", "Social Media"],
-    "ratings": { "story": 90, "acting": 92, "lookFeel": 84, "music": 80, "enjoyment": 89 },
-    "bme": [88, 91, 90],
-    "poster": "tmdb:489925"
-  },
-  {
-    "id": "waves-2019",
-    "title": "Waves",
-    "year": 2019,
-    "director": "Trey Edward Shults",
-    "cinematographer": "Drew Daniels",
-    "script": "Trey Edward Shults",
-    "budget": "$6m",
-    "length": "2h 15m",
-    "cast": ["Kelvin Harrison Jr.", "Taylor Russell", "Sterling K. Brown"],
-    "genre": ["Drama", "Romance"],
-    "tags": ["Family", "Emotional"],
-    "ratings": { "story": 87, "acting": 92, "lookFeel": 95, "music": 94, "enjoyment": 88 },
-    "bme": [86, 90, 89],
-    "poster": "tmdb:533444"
-  },
-  {
-    "id": "a-ghost-story-2017",
-    "title": "A Ghost Story",
-    "year": 2017,
-    "director": "David Lowery",
-    "cinematographer": "Andrew Droz Palermo",
-    "script": "David Lowery",
-    "budget": "$0.1m",
-    "length": "1h 32m",
-    "cast": ["Casey Affleck", "Rooney Mara"],
-    "genre": ["Drama", "Fantasy"],
-    "tags": ["Existential", "Minimalist"],
-    "ratings": { "story": 89, "acting": 85, "lookFeel": 96, "music": 92, "enjoyment": 84 },
-    "bme": [82, 88, 85],
-    "poster": "tmdb:428449"
-  },
-  {
-    "id": "enemy-2013",
-    "title": "Enemy",
-    "year": 2013,
-    "director": "Denis Villeneuve",
-    "cinematographer": "Nicolas Bolduc",
-    "script": "Javier Gullón",
-    "budget": "$3m",
-    "length": "1h 31m",
-    "cast": ["Jake Gyllenhaal", "Mélanie Laurent", "Sarah Gadon"],
-    "genre": ["Thriller", "Mystery"],
-    "tags": ["Psychological", "Surreal"],
-    "ratings": { "story": 85, "acting": 90, "lookFeel": 93, "music": 84, "enjoyment": 82 },
-    "bme": [80, 87, 83],
-    "poster": "tmdb:181886"
-  },
-  {
-    "id": "under-the-skin-2013",
-    "title": "Under the Skin",
-    "year": 2013,
-    "director": "Jonathan Glazer",
-    "cinematographer": "Daniel Landin",
-    "script": "Walter Campbell, Jonathan Glazer",
-    "budget": "$13m",
-    "length": "1h 48m",
-    "cast": ["Scarlett Johansson"],
-    "genre": ["Science Fiction", "Drama"],
-    "tags": ["Alien", "Experimental"],
-    "ratings": { "story": 80, "acting": 84, "lookFeel": 99, "music": 97, "enjoyment": 78 },
-    "bme": [76, 84, 79],
-    "poster": "tmdb:97370"
-  },
-  {
-    "id": "good-time-2017",
-    "title": "Good Time",
-    "year": 2017,
-    "director": "Josh Safdie, Benny Safdie",
-    "cinematographer": "Sean Price Williams",
-    "script": "Ronald Bronstein, Josh Safdie",
-    "budget": "$2m",
-    "length": "1h 42m",
-    "cast": ["Robert Pattinson", "Benny Safdie"],
-    "genre": ["Crime", "Thriller"],
-    "tags": ["Neon", "Anxiety"],
-    "ratings": { "story": 89, "acting": 92, "lookFeel": 94, "music": 96, "enjoyment": 91 },
-    "bme": [88, 93, 92],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeYyNCn86iXnQG6nW8KmPflO79PMsZrn_c6FkD9F3UcMWADclGP0q2B3kmftk1R_UPbX_QaA&s=10"
-  },
-  {
-    "id": "to-live-and-die-in-los-angeles-1985",
-    "title": "To Live and Die in Los Angeles",
-    "year": 1985,
-    "director": "William Friedkin",
-    "cinematographer": "Robby Müller",
-    "script": "Gerald Petievich, William Friedkin",
-    "budget": "$6m",
-    "length": "1h 56m",
-    "cast": ["William Petersen", "Willem Dafoe", "John Pankow"],
-    "genre": ["Crime", "Thriller", "Action"],
-    "tags": ["Neo-Noir", "Los Angeles", "80s"],
-    "ratings": { "story": 88, "acting": 87, "lookFeel": 97, "music": 95, "enjoyment": 91 },
-    "bme": [88, 93, 92],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDH_MDcUVvQEnOqh69ok-TPMOiMqOuJnLDElul0MyYPXP80kQ6plTbluI9d9M-VCNSl66Gww&s=10"
-  },
-  {
-    "id": "babettes-feast-1987",
-    "title": "Babette's Feast",
-    "year": 1987,
-    "director": "Gabriel Axel",
-    "cinematographer": "Henning Kristiansen",
-    "script": "Gabriel Axel",
-    "budget": "$4m",
-    "length": "1h 43m",
-    "cast": ["Stéphane Audran", "Birgitte Federspiel", "Bodil Kjer"],
-    "genre": ["Drama"],
-    "tags": ["Food", "Spiritual", "European"],
-    "ratings": { "story": 92, "acting": 90, "lookFeel": 91, "music": 82, "enjoyment": 90 },
-    "bme": [89, 93, 91],
-    "poster": "https://m.media-amazon.com/images/S/pv-target-images/49e53e5bad5612e3620905e74fd50e240877c444ed25d40f6a601f20cc7aba07.jpg"
-  },
-  {
-    "id": "jean-de-florette-1986",
-    "title": "Jean de Florette",
-    "year": 1986,
-    "director": "Claude Berri",
-    "cinematographer": "Bruno Nuytten",
-    "script": "Claude Berri, Gérard Brach",
-    "budget": "$8m",
-    "length": "2h 0m",
-    "cast": ["Yves Montand", "Gérard Depardieu", "Daniel Auteuil"],
-    "genre": ["Drama"],
-    "tags": ["Rural", "Tragedy", "French"],
-    "ratings": { "story": 95, "acting": 94, "lookFeel": 90, "music": 84, "enjoyment": 92 },
-    "bme": [91, 96, 93],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQphn98zPWYhtWi09FnYcRdnUB0zMaXT8xPHYu2ygDSfgFT9OheDU-e-cW7k90n6Ua5VQI1&s=10"
-  },
-    {
-    "id": "the-social-network-2010",
-    "title": "The Social Network",
-    "year": 2010,
-    "director": "David Fincher",
-    "cinematographer": "Jeff Cronenweth",
-    "script": "Aaron Sorkin",
-    "budget": "$40m",
-    "length": "2h 0m",
-    "cast": ["Jesse Eisenberg", "Andrew Garfield", "Justin Timberlake"],
-    "genre": ["Drama", "Biography"],
-    "tags": ["Technology", "Dialogue"],
-    "ratings": { "story": 96, "acting": 93, "lookFeel": 93, "music": 97, "enjoyment": 94 },
-    "bme": [93, 97, 95],
-    "poster": "tmdb:37799"
-  },
-  {
-    "id": "the-girl-with-the-dragon-tattoo-2011",
-    "title": "The Girl with the Dragon Tattoo",
-    "year": 2011,
-    "director": "David Fincher",
-    "cinematographer": "Jeff Cronenweth",
-    "script": "Steven Zaillian",
-    "budget": "$90m",
-    "length": "2h 38m",
-    "cast": ["Daniel Craig", "Rooney Mara", "Christopher Plummer"],
-    "genre": ["Crime", "Thriller", "Mystery"],
-    "tags": ["Investigation", "Dark"],
-    "ratings": { "story": 89, "acting": 91, "lookFeel": 95, "music": 96, "enjoyment": 90 },
-    "bme": [88, 92, 91],
-    "poster": "tmdb:65754"
-  },
-  {
-    "id": "panic-room-2002",
-    "title": "Panic Room",
-    "year": 2002,
-    "director": "David Fincher",
-    "cinematographer": "Conrad W. Hall",
-    "script": "David Koepp",
-    "budget": "$48m",
-    "length": "1h 52m",
-    "cast": ["Jodie Foster", "Kristen Stewart", "Forest Whitaker"],
-    "genre": ["Thriller", "Crime"],
-    "tags": ["Home Invasion", "Contained"],
-    "ratings": { "story": 80, "acting": 86, "lookFeel": 92, "music": 82, "enjoyment": 86 },
-    "bme": [82, 87, 88],
-    "poster": "tmdb:4547"
-  },
-  {
-    "id": "the-curious-case-of-benjamin-button-2008",
-    "title": "The Curious Case of Benjamin Button",
-    "year": 2008,
-    "director": "David Fincher",
-    "cinematographer": "Claudio Miranda",
-    "script": "Eric Roth",
-    "budget": "$150m",
-    "length": "2h 46m",
-    "cast": ["Brad Pitt", "Cate Blanchett", "Taraji P. Henson"],
-    "genre": ["Drama", "Fantasy", "Romance"],
-    "tags": ["Epic", "Melancholic"],
-    "ratings": { "story": 85, "acting": 90, "lookFeel": 96, "music": 90, "enjoyment": 87 },
-    "bme": [84, 89, 88],
-    "poster": "tmdb:4922"
-  },{
-    "id": "mank-2020",
-    "title": "Mank",
-    "year": 2020,
-    "director": "David Fincher",
-    "cinematographer": "Erik Messerschmidt",
-    "script": "Jack Fincher",
-    "budget": "$25m",
-    "length": "2h 11m",
-    "cast": ["Gary Oldman", "Amanda Seyfried", "Lily Collins"],
-    "genre": ["Drama", "Biography"],
-    "tags": ["Hollywood", "Black and White"],
-    "ratings": { "story": 78, "acting": 89, "lookFeel": 97, "music": 84, "enjoyment": 76 },
-    "bme": [74, 82, 77],
-    "poster": "tmdb:614560"
-  },
-  {
-    "id": "the-killer-2023",
-    "title": "The Killer",
-    "year": 2023,
-    "director": "David Fincher",
-    "cinematographer": "Erik Messerschmidt",
-    "script": "Andrew Kevin Walker",
-    "budget": "$175m",
-    "length": "1h 58m",
-    "cast": ["Michael Fassbender", "Tilda Swinton", "Charles Parnell"],
-    "genre": ["Thriller", "Crime"],
-    "tags": ["Assassin", "Minimalist"],
-    "ratings": { "story": 83, "acting": 88, "lookFeel": 96, "music": 87, "enjoyment": 85 },
-    "bme": [82, 87, 85],
-    "poster": "tmdb:800158"
-  },
-  {
-  "id": "anatomy-of-a-fall-2023",
-  "title": "Anatomy of a Fall",
-  "year": 2023,
-  "director": "Justine Triet",
-  "cinematographer": "Simon Beaufils",
-  "script": "Justine Triet, Arthur Harari",
-  "budget": "$6m",
-  "length": "2h 31m",
-  "cast": ["Sandra Hüller", "Swann Arlaud", "Milo Machado-Graner"],
-  "genre": ["Drama", "Thriller", "Mystery"],
-  "tags": ["Courtroom", "Psychological", "French"],
-  "ratings": { "story": 95, "acting": 96, "lookFeel": 91, "music": 78, "enjoyment": 93 },
-  "bme": [92, 96, 94],
-   "poster": "tmdb:915935"
-},
-{
-    "id": "force-majeure-2014",
-    "title": "Force Majeure",
-    "year": 2014,
-    "director": "Ruben Östlund",
-    "cinematographer": "Fredrik Wenzel",
-    "script": "Ruben Östlund",
-    "budget": "$4m",
-    "length": "1h 58m",
-    "cast": ["Johannes Bah Kuhnke", "Lisa Loven Kongsli", "Clara Wettergren"],
-    "genre": ["Drama", "Comedy"],
-    "tags": ["Satire", "Marriage", "Scandinavian"],
-    "ratings": { "story": 91, "acting": 89, "lookFeel": 92, "music": 74, "enjoyment": 88 },
-    "bme": [87, 91, 89],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPV3AF7BIS5wYUiR1My8hPrgCBEbwL9f0wQA&s"
-  },
-  {
-    "id": "the-square-2017",
-    "title": "The Square",
-    "year": 2017,
-    "director": "Ruben Östlund",
-    "cinematographer": "Fredrik Wenzel",
-    "script": "Ruben Östlund",
-    "budget": "$5m",
-    "length": "2h 31m",
-    "cast": ["Claes Bang", "Elisabeth Moss", "Dominic West"],
-    "genre": ["Drama", "Comedy"],
-    "tags": ["Satire", "Art World", "Awkward"],
-    "ratings": { "story": 88, "acting": 90, "lookFeel": 93, "music": 72, "enjoyment": 85 },
-    "bme": [84, 89, 86],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLDldJH0QH-JQV45tAKKDSCr8VQ3_kpw5jijDAnj6Qe8mHsHRZ_-KuVhURyf_THeBY2htD&s=10"
-  },
-  {
-    "id": "soapdish-1991",
-    "title": "Soapdish",
-    "year": 1991,
-    "director": "Michael Hoffman",
-    "cinematographer": "Ueli Steiger",
-    "script": "Robert Harling",
-    "budget": "$18m",
-    "length": "1h 37m",
-    "cast": ["Sally Field", "Kevin Kline", "Robert Downey Jr.", "Whoopi Goldberg"],
-    "genre": ["Comedy"],
-    "tags": ["Hollywood", "Satire", "Ensemble"],
-    "ratings": { "story": 79, "acting": 88, "lookFeel": 78, "music": 70, "enjoyment": 87 },
-    "bme": [82, 86, 88],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSg9jPZdhGgAGyerL__4fmYZvPvqHcYBkRLybpZ5jS1SPUZd9eZrPS2fObnTHTNIbmtmaCGMQ&s=10"
-  },
-  {
-    "id": "clue-1985",
-    "title": "Clue",
-    "year": 1985,
-    "director": "Jonathan Lynn",
-    "cinematographer": "Victor J. Kemper",
-    "script": "Jonathan Lynn",
-    "budget": "$15m",
-    "length": "1h 34m",
-    "cast": ["Tim Curry", "Madeline Kahn", "Christopher Lloyd", "Michael McKean"],
-    "genre": ["Comedy", "Mystery"],
-    "tags": ["Cult", "Whodunit", "Ensemble"],
-    "ratings": { "story": 84, "acting": 92, "lookFeel": 82, "music": 76, "enjoyment": 94 },
-    "bme": [90, 94, 95],
-    "poster": "tmdb:15196"
-  },
-  {
-    "id": "the-firm-1993",
-    "title": "The Firm",
-    "year": 1993,
-    "director": "Sydney Pollack",
-    "cinematographer": "John Seale",
-    "script": "David Rabe, Robert Towne, David Rayfiel",
-    "budget": "$42m",
-    "length": "2h 34m",
-    "cast": ["Tom Cruise", "Jeanne Tripplehorn", "Gene Hackman", "Ed Harris"],
-    "genre": ["Thriller", "Drama"],
-    "tags": ["Legal", "Conspiracy"],
-    "ratings": { "story": 88, "acting": 89, "lookFeel": 85, "music": 83, "enjoyment": 91 },
-    "bme": [87, 91, 92],
-    "poster": "tmdb:37233"
-  },
-  {
-    "id": "kiss-kiss-bang-bang-2005",
-    "title": "Kiss Kiss Bang Bang",
-    "year": 2005,
-    "director": "Shane Black",
-    "cinematographer": "Michael Barrett",
-    "script": "Shane Black",
-    "budget": "$15m",
-    "length": "1h 43m",
-    "cast": ["Robert Downey Jr.", "Val Kilmer", "Michelle Monaghan"],
-    "genre": ["Crime", "Comedy", "Mystery"],
-    "tags": ["Neo-Noir", "Hollywood", "Witty"],
-    "ratings": { "story": 89, "acting": 92, "lookFeel": 87, "music": 80, "enjoyment": 95 },
-    "bme": [90, 94, 95],
-    "poster": "tmdb:5236"
-  },
-  {
-    "id": "good-night-and-good-luck-2005",
-    "title": "Good Night, and Good Luck.",
-    "year": 2005,
-    "director": "George Clooney",
-    "cinematographer": "Robert Elswit",
-    "script": "George Clooney, Grant Heslov",
-    "budget": "$7m",
-    "length": "1h 33m",
-    "cast": ["David Strathairn", "George Clooney", "Patricia Clarkson"],
-    "genre": ["Drama", "History"],
-    "tags": ["Journalism", "Politics", "Black and White"],
-    "ratings": { "story": 91, "acting": 92, "lookFeel": 93, "music": 78, "enjoyment": 87 },
-    "bme": [88, 92, 89],
-    "poster": "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p89817_p_v8_ac.jpg"
-  },
-  {
-    "id": "wonder-boys-2000",
-    "title": "Wonder Boys",
-    "year": 2000,
-    "director": "Curtis Hanson",
-    "cinematographer": "Dante Spinotti",
-    "script": "Steve Kloves",
-    "budget": "$35m",
-    "length": "1h 51m",
-    "cast": ["Michael Douglas", "Tobey Maguire", "Frances McDormand", "Robert Downey Jr."],
-    "genre": ["Drama", "Comedy"],
-    "tags": ["Writers", "Academia"],
-    "ratings": { "story": 88, "acting": 91, "lookFeel": 84, "music": 82, "enjoyment": 89 },
-    "bme": [86, 90, 89],
-    "poster": "tmdb:786"
-  },
-  {
-    "id": "bowfinger-1999",
-    "title": "Bowfinger",
-    "year": 1999,
-    "director": "Frank Oz",
-    "cinematographer": "Ueli Steiger",
-    "script": "Steve Martin",
-    "budget": "$55m",
-    "length": "1h 37m",
-    "cast": ["Steve Martin", "Eddie Murphy", "Heather Graham"],
-    "genre": ["Comedy"],
-    "tags": ["Hollywood", "Satire"],
-    "ratings": { "story": 84, "acting": 90, "lookFeel": 78, "music": 72, "enjoyment": 92 },
-    "bme": [88, 92, 93],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQzsIne6TQv2fq4wKPeYawC97JHKq6B6qA8tEy273NvpSiOloNyM5-1Z8zawxfLlofCQOReg&s=10"
-  },
-  {
-    "id": "short-cuts-1993",
-    "title": "Short Cuts",
-    "year": 1993,
-    "director": "Robert Altman",
-    "cinematographer": "Walt Lloyd",
-    "script": "Robert Altman, Frank Barhydt",
-    "budget": "$14m",
-    "length": "3h 8m",
-    "cast": ["Tim Robbins", "Julianne Moore", "Matthew Modine", "Jennifer Jason Leigh"],
-    "genre": ["Drama", "Comedy"],
-    "tags": ["Ensemble", "Los Angeles"],
-    "ratings": { "story": 92, "acting": 95, "lookFeel": 88, "music": 76, "enjoyment": 89 },
-    "bme": [88, 94, 90],
-    "poster": "tmdb:26670"
-  },
-  {
-    "id": "chaplin-1992",
-    "title": "Chaplin",
-    "year": 1992,
-    "director": "Richard Attenborough",
-    "cinematographer": "Sven Nykvist",
-    "script": "William Boyd, Bryan Forbes, William Goldman",
-    "budget": "$31m",
-    "length": "2h 23m",
-    "cast": ["Robert Downey Jr.", "Dan Aykroyd", "Geraldine Chaplin"],
-    "genre": ["Biography", "Drama"],
-    "tags": ["Hollywood", "Historical"],
-    "ratings": { "story": 87, "acting": 96, "lookFeel": 89, "music": 84, "enjoyment": 87 },
-    "bme": [85, 92, 88],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpSMAWlZyTocq6nrVjBHjqFMCPuBEjiSdEBxgskEiSaFfRrHKwHcUwQrKF0o6e5VpZtu9NBw&s=10"
-  },
-  {
-    "id": "the-dirties-2013",
-    "title": "The Dirties",
-    "year": 2013,
-    "director": "Matt Johnson",
-    "cinematographer": "Jared Raab",
-    "script": "Matt Johnson",
-    "budget": "$0.01m",
-    "length": "1h 23m",
-    "cast": ["Matt Johnson", "Owen Williams"],
-    "genre": ["Drama", "Comedy"],
-    "tags": ["Found Footage", "Dark"],
-    "ratings": { "story": 85, "acting": 84, "lookFeel": 78, "music": 68, "enjoyment": 82 },
-    "bme": [80, 86, 83],
-    "poster": "https://m.media-amazon.com/images/M/MV5BMjk5OTcyNDQ3M15BMl5BanBnXkFtZTgwMTk3NDgyMDE@._V1_FMjpg_UX1000_.jpg"
-  },
-  {
-    "id": "operation-avalanche-2016",
-    "title": "Operation Avalanche",
-    "year": 2016,
-    "director": "Matt Johnson",
-    "cinematographer": "Jared Raab",
-    "script": "Matt Johnson, Josh Boles",
-    "budget": "$0.5m",
-    "length": "1h 34m",
-    "cast": ["Matt Johnson", "Owen Williams", "Josh Boles"],
-    "genre": ["Comedy", "Thriller"],
-    "tags": ["Conspiracy", "Mockumentary"],
-    "ratings": { "story": 84, "acting": 82, "lookFeel": 84, "music": 70, "enjoyment": 85 },
-    "bme": [82, 86, 86],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOM7xNrShi5U-QDIzXmy650b3GqfVrz9bH4mLbc9rmY_N3VTJjvp2M6VTVMFpLvjqhUa0XNQ&s=10"
-  },
-  {
-    "id": "dirty-rotten-scoundrels-1988",
-    "title": "Dirty Rotten Scoundrels",
-    "year": 1988,
-    "director": "Frank Oz",
-    "cinematographer": "Michael Ballhaus",
-    "script": "Dale Launer, Stanley Shapiro, Paul Henning",
-    "budget": "$13m",
-    "length": "1h 50m",
-    "cast": ["Steve Martin", "Michael Caine", "Glenne Headly"],
-    "genre": ["Comedy"],
-    "tags": ["Con Artists", "Riviera"],
-    "ratings": { "story": 88, "acting": 92, "lookFeel": 82, "music": 74, "enjoyment": 95 },
-    "bme": [91, 95, 96],
-    "poster": "tmdb:10141"
-  },
-  {
-    "id": "deconstructing-harry-1997",
-    "title": "Deconstructing Harry",
-    "year": 1997,
-    "director": "Woody Allen",
-    "cinematographer": "Carlo Di Palma",
-    "script": "Woody Allen",
-    "budget": "$20m",
-    "length": "1h 36m",
-    "cast": ["Woody Allen", "Judy Davis", "Kirstie Alley", "Billy Crystal"],
-    "genre": ["Comedy", "Drama"],
-    "tags": ["Writers", "Neurotic", "Satire"],
-    "ratings": { "story": 89, "acting": 91, "lookFeel": 79, "music": 70, "enjoyment": 87 },
-    "bme": [85, 90, 88],
-    "poster": "https://m.media-amazon.com/images/M/MV5BNDEyMzNhZTQtMmJkNC00ZWRkLWE1YjEtNzRkZGY5YWFiZmVjXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg"
-  },
-  {
-    "id": "home-for-the-holidays-1995",
-    "title": "Home for the Holidays",
-    "year": 1995,
-    "director": "Jodie Foster",
-    "cinematographer": "Lajos Koltai",
-    "script": "W.D. Richter",
-    "budget": "$20m",
-    "length": "1h 43m",
-    "cast": ["Holly Hunter", "Robert Downey Jr.", "Anne Bancroft"],
-    "genre": ["Comedy", "Drama"],
-    "tags": ["Family", "Thanksgiving"],
-    "ratings": { "story": 84, "acting": 89, "lookFeel": 80, "music": 76, "enjoyment": 86 },
-    "bme": [84, 88, 87],
-    "poster": "tmdb:9089"
-  },
-  {
-    "id": "the-miracle-worker-1962",
-    "title": "The Miracle Worker",
-    "year": 1962,
-    "director": "Arthur Penn",
-    "cinematographer": "Ernesto Caparrós",
-    "script": "William Gibson",
-    "budget": "$0.5m",
-    "length": "1h 46m",
-    "cast": ["Anne Bancroft", "Patty Duke"],
-    "genre": ["Drama", "Biography"],
-    "tags": ["Education", "Perseverance"],
-    "ratings": { "story": 94, "acting": 98, "lookFeel": 84, "music": 68, "enjoyment": 90 },
-    "bme": [90, 96, 92],
-    "poster": "tmdb:43040"
-  },
-  {
-    "id": "the-graduate-1967",
-    "title": "The Graduate",
-    "year": 1967,
-    "director": "Mike Nichols",
-    "cinematographer": "Robert Surtees",
-    "script": "Calder Willingham, Buck Henry",
-    "budget": "$3m",
-    "length": "1h 46m",
-    "cast": ["Dustin Hoffman", "Anne Bancroft", "Katharine Ross"],
-    "genre": ["Drama", "Comedy", "Romance"],
-    "tags": ["Coming of Age", "Classic"],
-    "ratings": { "story": 95, "acting": 94, "lookFeel": 91, "music": 96, "enjoyment": 94 },
-    "bme": [92, 96, 95],
-    "poster": "tmdb:37247"
-  },
-  {
-    "id": "antz-1998",
-    "title": "Antz",
-    "year": 1998,
-    "director": "Eric Darnell, Tim Johnson",
-    "cinematographer": "",
-    "script": "Todd Alcott, Chris Weitz, Paul Weitz",
-    "budget": "$60m",
-    "length": "1h 23m",
-    "cast": ["Woody Allen", "Sharon Stone", "Gene Hackman", "Sylvester Stallone"],
-    "genre": ["Animation", "Comedy", "Adventure"],
-    "tags": ["Family", "Satire"],
-    "ratings": { "story": 80, "acting": 83, "lookFeel": 79, "music": 75, "enjoyment": 84 },
-    "bme": [82, 84, 85],
-    "poster": "tmdb:8916"
-  },
-  {
-    "id": "waking-ned-devine-1998",
-    "title": "Waking Ned Devine",
-    "year": 1998,
-    "director": "Kirk Jones",
-    "cinematographer": "Henry Braham",
-    "script": "Kirk Jones",
-    "budget": "$3m",
-    "length": "1h 31m",
-    "cast": ["Ian Bannen", "David Kelly", "Fionnula Flanagan"],
-    "genre": ["Comedy"],
-    "tags": ["Irish", "Small Town"],
-    "ratings": { "story": 86, "acting": 88, "lookFeel": 83, "music": 82, "enjoyment": 91 },
-    "bme": [88, 91, 92],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUR7t-BJXX1qw5cxiOaA4a3eAsUHRjW-4mYZRqrad_lhMiDgkb_lapcdQ99fjxhilJnjFaEA&s=10"
-  },
-  {
-    "id": "the-elephant-man-1980",
-    "title": "The Elephant Man",
-    "year": 1980,
-    "director": "David Lynch",
-    "cinematographer": "Freddie Francis",
-    "script": "Christopher De Vore, Eric Bergren, David Lynch",
-    "budget": "$5m",
-    "length": "2h 4m",
-    "cast": ["John Hurt", "Anthony Hopkins", "Anne Bancroft"],
-    "genre": ["Drama", "Biography"],
-    "tags": ["Humanity", "Black and White"],
-    "ratings": { "story": 96, "acting": 97, "lookFeel": 95, "music": 84, "enjoyment": 93 },
-    "bme": [93, 97, 95],
-    "poster": "tmdb:1955"
-  },
-  {
-    "id": "silent-movie-1976",
-    "title": "Silent Movie",
-    "year": 1976,
-    "director": "Mel Brooks",
-    "cinematographer": "Paul Lohmann",
-    "script": "Mel Brooks, Ron Clark, Rudy De Luca",
-    "budget": "$4m",
-    "length": "1h 27m",
-    "cast": ["Mel Brooks", "Marty Feldman", "Dom DeLuise"],
-    "genre": ["Comedy"],
-    "tags": ["Hollywood", "Parody"],
-    "ratings": { "story": 78, "acting": 86, "lookFeel": 76, "music": 72, "enjoyment": 88 },
-    "bme": [84, 88, 89],
-    "poster": "https://upload.wikimedia.org/wikipedia/en/thumb/6/65/Silent_movie_movie_poster.jpg/250px-Silent_movie_movie_poster.jpg"
-  },
-  {
-    "id": "the-night-of-the-iguana-1964",
-    "title": "The Night of the Iguana",
-    "year": 1964,
-    "director": "John Huston",
-    "cinematographer": "Gabriel Figueroa",
-    "script": "Anthony Veiller, John Huston",
-    "budget": "$3m",
-    "length": "2h 5m",
-    "cast": ["Richard Burton", "Ava Gardner", "Deborah Kerr"],
-    "genre": ["Drama"],
-    "tags": ["Literary", "Psychological"],
-    "ratings": { "story": 89, "acting": 94, "lookFeel": 88, "music": 72, "enjoyment": 86 },
-    "bme": [84, 91, 87],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiJCbYehgaU1f3I6JhCnFvvFqn0T_7pOD1CTyLvPxCZblURerf9rGndlq6kVWA1u3kqqx5CQ&s=10"
-  },
-  {
-    "id": "the-night-of-the-hunter-1955",
-    "title": "The Night of the Hunter",
-    "year": 1955,
-    "director": "Charles Laughton",
-    "cinematographer": "Stanley Cortez",
-    "script": "James Agee",
-    "budget": "$0.8m",
-    "length": "1h 33m",
-    "cast": ["Robert Mitchum", "Shelley Winters", "Lillian Gish"],
-    "genre": ["Thriller", "Drama", "Film Noir"],
-    "tags": ["Expressionist", "Classic"],
-    "ratings": { "story": 95, "acting": 94, "lookFeel": 99, "music": 82, "enjoyment": 92 },
-    "bme": [91, 97, 94],
-    "poster": "https://static.tvtropes.org/pmwiki/pub/images/the_night_of_the_hunter_3.png"
-  },
-  {
-    "id": "sicario-2015",
-    "title": "Sicario",
-    "year": 2015,
-    "director": "Denis Villeneuve",
-    "cinematographer": "Roger Deakins",
-    "script": "Taylor Sheridan",
-    "budget": "$30m",
-    "length": "2h 1m",
-    "cast": ["Emily Blunt", "Benicio Del Toro", "Josh Brolin"],
-    "genre": ["Crime", "Thriller"],
-    "tags": ["Border", "Tension"],
-    "ratings": { "story": 92, "acting": 91, "lookFeel": 98, "music": 95, "enjoyment": 93 },
-    "bme": [91, 95, 94],
-    "poster": "tmdb:273481"
-  },
-  {
-    "id": "small-time-crooks-2000",
-    "title": "Small Time Crooks",
-    "year": 2000,
-    "director": "Woody Allen",
-    "cinematographer": "Zhao Fei",
-    "script": "Woody Allen",
-    "budget": "$24m",
-    "length": "1h 34m",
-    "cast": ["Woody Allen", "Tracey Ullman", "Hugh Grant"],
-    "genre": ["Comedy", "Crime"],
-    "tags": ["Heist", "Satire"],
-    "ratings": { "story": 81, "acting": 87, "lookFeel": 76, "music": 70, "enjoyment": 86 },
-    "bme": [82, 86, 87],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwBqcWk3nR3_132LF2r9eSWLHUZvclndzZBRMTz8qocQ7Znsgsqf1xKpHwHsUsjYg2zupzlw&s=10"
-  },
-  {
-    "id": "noises-off-1992",
-    "title": "Noises Off",
-    "year": 1992,
-    "director": "Peter Bogdanovich",
-    "cinematographer": "Tim Suhrstedt",
-    "script": "Marty Kaplan",
-    "budget": "$12m",
-    "length": "1h 41m",
-    "cast": ["Michael Caine", "Carol Burnett", "John Ritter", "Christopher Reeve"],
-    "genre": ["Comedy"],
-    "tags": ["Farce", "Theatre", "Ensemble"],
-    "ratings": { "story": 84, "acting": 93, "lookFeel": 78, "music": 72, "enjoyment": 94 },
-    "bme": [89, 94, 95],
-    "poster": "tmdb:26670"
-  },
-  {
-    "id": "the-producers-1967",
-    "title": "The Producers",
-    "year": 1967,
-    "director": "Mel Brooks",
-    "cinematographer": "Joseph Coffey",
-    "script": "Mel Brooks",
-    "budget": "$0.9m",
-    "length": "1h 28m",
-    "cast": ["Zero Mostel", "Gene Wilder", "Dick Shawn"],
-    "genre": ["Comedy"],
-    "tags": ["Satire", "Broadway", "Cult"],
-    "ratings": { "story": 91, "acting": 95, "lookFeel": 79, "music": 82, "enjoyment": 95 },
-    "bme": [92, 96, 96],
-    "poster": "tmdb:30197"
-  },
-  {
-    "id": "some-like-it-hot-1959",
-    "title": "Some Like It Hot",
-    "year": 1959,
-    "director": "Billy Wilder",
-    "cinematographer": "Charles Lang",
-    "script": "Billy Wilder, I.A.L. Diamond",
-    "budget": "$2.9m",
-    "length": "2h 1m",
-    "cast": ["Marilyn Monroe", "Tony Curtis", "Jack Lemmon"],
-    "genre": ["Comedy", "Romance"],
-    "tags": ["Classic", "Cross-Dressing", "Screwball"],
-    "ratings": { "story": 96, "acting": 97, "lookFeel": 90, "music": 84, "enjoyment": 98 },
-    "bme": [95, 98, 99],
-    "poster": "tmdb:239"
-  },
-  {
-    "id": "one-two-three-1961",
-    "title": "One, Two, Three",
-    "year": 1961,
-    "director": "Billy Wilder",
-    "cinematographer": "Daniel Fapp",
-    "script": "Billy Wilder, I.A.L. Diamond",
-    "budget": "$4m",
-    "length": "1h 48m",
-    "cast": ["James Cagney", "Horst Buchholz", "Pamela Tiffin"],
-    "genre": ["Comedy"],
-    "tags": ["Cold War", "Satire", "Rapid Fire"],
-    "ratings": { "story": 89, "acting": 92, "lookFeel": 84, "music": 75, "enjoyment": 92 },
-    "bme": [90, 93, 93],
-    "poster": "https://m.media-amazon.com/images/M/MV5BYjVlOTAxZDctMmM1Ny00ZGIwLTgwYTItZjIwYjAxNDg5OWFlXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg"
-  },
-  {
-    "id": "close-encounters-of-the-third-kind-1977",
-    "title": "Close Encounters of the Third Kind",
-    "year": 1977,
-    "director": "Steven Spielberg",
-    "cinematographer": "Vilmos Zsigmond",
-    "script": "Steven Spielberg",
-    "budget": "$20m",
-    "length": "2h 18m",
-    "cast": ["Richard Dreyfuss", "François Truffaut", "Melinda Dillon"],
-    "genre": ["Science Fiction", "Drama"],
-    "tags": ["Aliens", "Wonder", "Spielberg"],
-    "ratings": { "story": 92, "acting": 88, "lookFeel": 97, "music": 98, "enjoyment": 93 },
-    "bme": [90, 95, 94],
-    "poster": "tmdb:840"
-  },
-  {
-    "id": "i-heart-huckabees-2004",
-    "title": "I Heart Huckabees",
-    "year": 2004,
-    "director": "David O. Russell",
-    "cinematographer": "Peter Deming",
-    "script": "David O. Russell, Jeff Baena",
-    "budget": "$22m",
-    "length": "1h 47m",
-    "cast": ["Jason Schwartzman", "Dustin Hoffman", "Lily Tomlin", "Mark Wahlberg"],
-    "genre": ["Comedy", "Drama"],
-    "tags": ["Existential", "Philosophy", "Quirky"],
-    "ratings": { "story": 87, "acting": 90, "lookFeel": 84, "music": 80, "enjoyment": 86 },
-    "bme": [84, 89, 87],
-    "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSH01z0oHUWlpDX08zxo_IDQqDEIZrnprAWPSEOJxuVYwQjmfiPBMpVsNnfM5g1Fo9AH8mp&s=10"
-  },
-  {
-    "id": "elle-2016",
-    "title": "Elle",
-    "year": 2016,
-    "director": "Paul Verhoeven",
-    "cinematographer": "Stéphane Fontaine",
-    "script": "David Birke",
-    "budget": "$9m",
-    "length": "2h 10m",
-    "cast": ["Isabelle Huppert", "Laurent Lafitte", "Anne Consigny"],
-    "genre": ["Drama", "Thriller"],
-    "tags": ["Psychological", "French", "Dark Comedy"],
-    "ratings": { "story": 91, "acting": 98, "lookFeel": 88, "music": 76, "enjoyment": 87 },
-    "bme": [86, 93, 88],
-    "poster": "https://m.media-amazon.com/images/M/MV5BMTc5NDI5MzA1OF5BMl5BanBnXkFtZTgwMTQzNTQwMDI@._V1_FMjpg_UX1000_.jpg"
-  }
+  const FILMS_DATA = [
+    { id: "the-florida-project-2017", title: "The Florida Project", year: 2017, director: "Sean Baker", cinematographer: "Alexis Zabe", script: "Sean Baker, Chris Bergoch", budget: "$2m", length: "1h 51m", cast: ["Brooklynn Prince", "Willem Dafoe", "Bria Vinaite"], genre: ["Drama"], tags: ["Childhood", "Slice of Life"], ratings: { story: 93, acting: 94, lookFeel: 92, music: 78, enjoyment: 91 }, bme: [90, 95, 92], mood: { thriller: 10, romcom: 5, comedy: 5, horror: 0, drama: 80 }, poster: "https://m.media-amazon.com/images/M/MV5BNDBhM2MxYjAtMWFiYy00MWMwLThkMDYtN2M1ZWY3NjkxNGExXkEyXkFqcGc@._V1_.jpg" },
+  { id: "minari-2020", title: "Minari", year: 2020, director: "Lee Isaac Chung", cinematographer: "Lachlan Milne", script: "Lee Isaac Chung", budget: "$2m", length: "1h 55m", cast: ["Steven Yeun", "Han Ye-ri", "Youn Yuh-jung"], genre: ["Drama"], tags: ["Family", "Immigrant"], ratings: { story: 91, acting: 94, lookFeel: 89, music: 82, enjoyment: 90 }, bme: [89, 93, 91], mood: { thriller: 10, romcom: 5, comedy: 10, horror: 0, drama: 90 }, poster: "tmdb:615643" },
+  { id: "the-green-knight-2021", title: "The Green Knight", year: 2021, director: "David Lowery", cinematographer: "Andrew Droz Palermo", script: "David Lowery", budget: "$15m", length: "2h 10m", cast: ["Dev Patel", "Alicia Vikander", "Joel Edgerton"], genre: ["Fantasy", "Drama"], tags: ["Mythic", "Atmospheric"], ratings: { story: 84, acting: 89, lookFeel: 98, music: 90, enjoyment: 84 }, bme: [82, 90, 85], mood: { thriller: 10, romcom: 5, comedy: 5, horror: 0, drama: 90 }, poster: "tmdb:559907" },
+  { id: "civil-war-2024", title: "Civil War", year: 2024, director: "Alex Garland", cinematographer: "Rob Hardy", script: "Alex Garland", budget: "$50m", length: "1h 49m", cast: ["Kirsten Dunst", "Cailee Spaeny", "Wagner Moura"], genre: ["Drama", "Thriller"], tags: ["War", "Political"], ratings: { story: 87, acting: 88, lookFeel: 93, music: 84, enjoyment: 89 }, bme: [86, 90, 89], mood: { thriller: 80, romcom: 5, comedy: 5, horror: 0, drama: 100 }, poster: "tmdb:929590" },
+  { id: "bodies-bodies-bodies-2022", title: "Bodies Bodies Bodies", year: 2022, director: "Halina Reijn", cinematographer: "Jasper Wolf", script: "Sarah DeLappe", budget: "$3m", length: "1h 34m", cast: ["Amandla Stenberg", "Maria Bakalova", "Pete Davidson"], genre: ["Comedy", "Horror"], tags: ["Satire", "Gen Z"], ratings: { story: 79, acting: 84, lookFeel: 85, music: 82, enjoyment: 86 }, bme: [80, 85, 87], mood: { thriller: 30, romcom: 5, comedy: 90, horror: 75, drama: 20 }, poster: "tmdb:520023" },
+  { id: "marcel-the-shell-with-shoes-on-2021", title: "Marcel the Shell with Shoes On", year: 2021, director: "Dean Fleischer Camp", cinematographer: "Bianca Cline", script: "Dean Fleischer Camp, Jenny Slate, Nick Paley", budget: "$1m", length: "1h 30m", cast: ["Jenny Slate", "Isabella Rossellini", "Dean Fleischer Camp"], genre: ["Animation", "Comedy", "Drama"], tags: ["Whimsical", "Heartfelt"], ratings: { story: 91, acting: 88, lookFeel: 90, music: 83, enjoyment: 93 }, bme: [90, 93, 94], mood: { thriller: 10, romcom: 20, comedy: 100, horror: 0, drama: 95 }, poster: "tmdb:869626" },
+  { id: "the-iron-claw-2023", title: "The Iron Claw", year: 2023, director: "Sean Durkin", cinematographer: "Mátyás Erdély", script: "Sean Durkin", budget: "$16m", length: "2h 12m", cast: ["Zac Efron", "Jeremy Allen White", "Harris Dickinson"], genre: ["Drama", "Sport"], tags: ["Family", "Tragedy"], ratings: { story: 92, acting: 94, lookFeel: 88, music: 82, enjoyment: 91 }, bme: [90, 94, 92], mood: { thriller: 10, romcom: 5, comedy: 10, horror: 0, drama: 100 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKA7vUyTuDB7pyVDAyfjgR6nnsWgwa9IsNGKsT7-ZIZV3RpGn91ytlnLIOggdGv1qOIMN2&s=10" },
+  { id: "beau-is-afraid-2023", title: "Beau Is Afraid", year: 2023, director: "Ari Aster", cinematographer: "Pawel Pogorzelski", script: "Ari Aster", budget: "$35m", length: "2h 59m", cast: ["Joaquin Phoenix", "Patti LuPone", "Nathan Lane"], genre: ["Drama", "Comedy", "Horror"], tags: ["Surreal", "Anxiety"], ratings: { story: 76, acting: 94, lookFeel: 96, music: 88, enjoyment: 74 }, bme: [70, 82, 76], mood: { thriller: 60, romcom: 5, comedy: 75, horror: 95, drama: 80 }, poster: "tmdb:798286" },
+  { id: "eighth-grade-2018", title: "Eighth Grade", year: 2018, director: "Bo Burnham", cinematographer: "Andrew Wehde", script: "Bo Burnham", budget: "$2m", length: "1h 33m", cast: ["Elsie Fisher", "Josh Hamilton"], genre: ["Drama", "Comedy"], tags: ["Coming of Age", "Social Media"], ratings: { story: 90, acting: 92, lookFeel: 84, music: 80, enjoyment: 89 }, bme: [88, 91, 90], mood: { thriller: 10, romcom: 15, comedy: 75, horror: 0, drama: 90 }, poster: "tmdb:489925" },
+  { id: "waves-2019", title: "Waves", year: 2019, director: "Trey Edward Shults", cinematographer: "Drew Daniels", script: "Trey Edward Shults", budget: "$6m", length: "2h 15m", cast: ["Kelvin Harrison Jr.", "Taylor Russell", "Sterling K. Brown"], genre: ["Drama", "Romance"], tags: ["Family", "Emotional"], ratings: { story: 87, acting: 92, lookFeel: 95, music: 94, enjoyment: 88 }, bme: [86, 90, 89], mood: { thriller: 10, romcom: 70, comedy: 10, horror: 0, drama: 100 }, poster: "tmdb:533444" },
+  { id: "a-ghost-story-2017", title: "A Ghost Story", year: 2017, director: "David Lowery", cinematographer: "Andrew Droz Palermo", script: "David Lowery", budget: "$0.1m", length: "1h 32m", cast: ["Casey Affleck", "Rooney Mara"], genre: ["Drama", "Fantasy"], tags: ["Existential", "Minimalist"], ratings: { story: 89, acting: 85, lookFeel: 96, music: 92, enjoyment: 84 }, bme: [82, 88, 85], mood: { thriller: 10, romcom: 5, comedy: 5, horror: 0, drama: 100 }, poster: "tmdb:428449" },
+  { id: "enemy-2013", title: "Enemy", year: 2013, director: "Denis Villeneuve", cinematographer: "Nicolas Bolduc", script: "Javier Gullón", budget: "$3m", length: "1h 31m", cast: ["Jake Gyllenhaal", "Mélanie Laurent", "Sarah Gadon"], genre: ["Thriller", "Mystery"], tags: ["Psychological", "Surreal"], ratings: { story: 85, acting: 90, lookFeel: 93, music: 84, enjoyment: 82 }, bme: [80, 87, 83], mood: { thriller: 100, romcom: 5, comedy: 5, horror: 10, drama: 50 }, poster: "tmdb:181886" },
+  { id: "under-the-skin-2013", title: "Under the Skin", year: 2013, director: "Jonathan Glazer", cinematographer: "Daniel Landin", script: "Walter Campbell, Jonathan Glazer", budget: "$13m", length: "1h 48m", cast: ["Scarlett Johansson"], genre: ["Science Fiction", "Drama"], tags: ["Alien", "Experimental"], ratings: { story: 80, acting: 84, lookFeel: 99, music: 97, enjoyment: 78 }, bme: [76, 84, 79], mood: { thriller: 30, romcom: 5, comedy: 5, horror: 0, drama: 80 }, poster: "tmdb:97370" },
+  { id: "good-time-2017", title: "Good Time", year: 2017, director: "Josh Safdie, Benny Safdie", cinematographer: "Sean Price Williams", script: "Ronald Bronstein, Josh Safdie", budget: "$2m", length: "1h 42m", cast: ["Robert Pattinson", "Benny Safdie"], genre: ["Crime", "Thriller"], tags: ["Neon", "Anxiety"], ratings: { story: 89, acting: 92, lookFeel: 94, music: 96, enjoyment: 91 }, bme: [88, 93, 92], mood: { thriller: 100, romcom: 5, comedy: 5, horror: 10, drama: 55 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeYyNCn86iXnQG6nW8KmPflO79PMsZrn_c6FkD9F3UcMWADclGP0q2B3kmftk1R_UPbX_QaA&s=10" },
+  { id: "to-live-and-die-in-los-angeles-1985", title: "To Live and Die in Los Angeles", year: 1985, director: "William Friedkin", cinematographer: "Robby Müller", script: "Gerald Petievich, William Friedkin", budget: "$6m", length: "1h 56m", cast: ["William Petersen", "Willem Dafoe", "John Pankow"], genre: ["Crime", "Thriller", "Action"], tags: ["Neo-Noir", "Los Angeles", "80s"], ratings: { story: 88, acting: 87, lookFeel: 97, music: 95, enjoyment: 91 }, bme: [88, 93, 92], mood: { thriller: 100, romcom: 5, comedy: 5, horror: 0, drama: 55 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDH_MDcUVvQEnOqh69ok-TPMOiMqOuJnLDElul0MyYPXP80kQ6plTbluI9d9M-VCNSl66Gww&s=10" },
+  { id: "babettes-feast-1987", title: "Babette's Feast", year: 1987, director: "Gabriel Axel", cinematographer: "Henning Kristiansen", script: "Gabriel Axel", budget: "$4m", length: "1h 43m", cast: ["Stéphane Audran", "Birgitte Federspiel", "Bodil Kjer"], genre: ["Drama"], tags: ["Food", "Spiritual", "European"], ratings: { story: 92, acting: 90, lookFeel: 91, music: 82, enjoyment: 90 }, bme: [89, 93, 91], mood: { thriller: 10, romcom: 5, comedy: 5, horror: 0, drama: 80 }, poster: "https://m.media-amazon.com/images/S/pv-target-images/49e53e5bad5612e3620905e74fd50e240877c444ed25d40f6a601f20cc7aba07.jpg" },
+  { id: "jean-de-florette-1986", title: "Jean de Florette", year: 1986, director: "Claude Berri", cinematographer: "Bruno Nuytten", script: "Claude Berri, Gérard Brach", budget: "$8m", length: "2h 0m", cast: ["Yves Montand", "Gérard Depardieu", "Daniel Auteuil"], genre: ["Drama"], tags: ["Rural", "Tragedy", "French"], ratings: { story: 95, acting: 94, lookFeel: 90, music: 84, enjoyment: 92 }, bme: [91, 96, 93], mood: { thriller: 10, romcom: 5, comedy: 5, horror: 0, drama: 100 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQphn98zPWYhtWi09FnYcRdnUB0zMaXT8xPHYu2ygDSfgFT9OheDU-e-cW7k90n6Ua5VQI1&s=10" },
+  { id: "the-social-network-2010", title: "The Social Network", year: 2010, director: "David Fincher", cinematographer: "Jeff Cronenweth", script: "Aaron Sorkin", budget: "$40m", length: "2h 0m", cast: ["Jesse Eisenberg", "Andrew Garfield", "Justin Timberlake"], genre: ["Drama", "Biography"], tags: ["Technology", "Dialogue"], ratings: { story: 96, acting: 93, lookFeel: 93, music: 97, enjoyment: 94 }, bme: [93, 97, 95], mood: { thriller: 10, romcom: 5, comedy: 5, horror: 0, drama: 100 }, poster: "tmdb:37799" },
+  { id: "the-girl-with-the-dragon-tattoo-2011", title: "The Girl with the Dragon Tattoo", year: 2011, director: "David Fincher", cinematographer: "Jeff Cronenweth", script: "Steven Zaillian", budget: "$90m", length: "2h 38m", cast: ["Daniel Craig", "Rooney Mara", "Christopher Plummer"], genre: ["Crime", "Thriller", "Mystery"], tags: ["Investigation", "Dark"], ratings: { story: 89, acting: 91, lookFeel: 95, music: 96, enjoyment: 90 }, bme: [88, 92, 91], mood: { thriller: 100, romcom: 5, comedy: 5, horror: 15, drama: 55 }, poster: "tmdb:65754" },
+  { id: "panic-room-2002", title: "Panic Room", year: 2002, director: "David Fincher", cinematographer: "Conrad W. Hall", script: "David Koepp", budget: "$48m", length: "1h 52m", cast: ["Jodie Foster", "Kristen Stewart", "Forest Whitaker"], genre: ["Thriller", "Crime"], tags: ["Home Invasion", "Contained"], ratings: { story: 80, acting: 86, lookFeel: 92, music: 82, enjoyment: 86 }, bme: [82, 87, 88], mood: { thriller: 100, romcom: 5, comedy: 5, horror: 10, drama: 55 }, poster: "tmdb:4547" },
+  { id: "the-curious-case-of-benjamin-button-2008", title: "The Curious Case of Benjamin Button", year: 2008, director: "David Fincher", cinematographer: "Claudio Miranda", script: "Eric Roth", budget: "$150m", length: "2h 46m", cast: ["Brad Pitt", "Cate Blanchett", "Taraji P. Henson"], genre: ["Drama", "Fantasy", "Romance"], tags: ["Epic", "Melancholic"], ratings: { story: 85, acting: 90, lookFeel: 96, music: 90, enjoyment: 87 }, bme: [84, 89, 88], mood: { thriller: 10, romcom: 75, comedy: 5, horror: 0, drama: 100 }, poster: "tmdb:4922" },
+  { id: "mank-2020", title: "Mank", year: 2020, director: "David Fincher", cinematographer: "Erik Messerschmidt", script: "Jack Fincher", budget: "$25m", length: "2h 11m", cast: ["Gary Oldman", "Amanda Seyfried", "Lily Collins"], genre: ["Drama", "Biography"], tags: ["Hollywood", "Black and White"], ratings: { story: 78, acting: 89, lookFeel: 97, music: 84, enjoyment: 76 }, bme: [74, 82, 77], mood: { thriller: 10, romcom: 5, comedy: 5, horror: 0, drama: 100 }, poster: "tmdb:614560" },
+  { id: "the-killer-2023", title: "The Killer", year: 2023, director: "David Fincher", cinematographer: "Erik Messerschmidt", script: "Andrew Kevin Walker", budget: "$175m", length: "1h 58m", cast: ["Michael Fassbender", "Tilda Swinton", "Charles Parnell"], genre: ["Thriller", "Crime"], tags: ["Assassin", "Minimalist"], ratings: { story: 83, acting: 88, lookFeel: 96, music: 87, enjoyment: 85 }, bme: [82, 87, 85], mood: { thriller: 100, romcom: 5, comedy: 5, horror: 0, drama: 60 }, poster: "tmdb:800158" },
+  { id: "anatomy-of-a-fall-2023", title: "Anatomy of a Fall", year: 2023, director: "Justine Triet", cinematographer: "Simon Beaufils", script: "Justine Triet, Arthur Harari", budget: "$6m", length: "2h 31m", cast: ["Sandra Hüller", "Swann Arlaud", "Milo Machado-Graner"], genre: ["Drama", "Thriller", "Mystery"], tags: ["Courtroom", "Psychological", "French"], ratings: { story: 95, acting: 96, lookFeel: 91, music: 78, enjoyment: 93 }, bme: [92, 96, 94], mood: { thriller: 100, romcom: 5, comedy: 5, horror: 0, drama: 100 }, poster: "tmdb:915935" },
+  { id: "force-majeure-2014", title: "Force Majeure", year: 2014, director: "Ruben Östlund", cinematographer: "Fredrik Wenzel", script: "Ruben Östlund", budget: "$4m", length: "1h 58m", cast: ["Johannes Bah Kuhnke", "Lisa Loven Kongsli", "Clara Wettergren"], genre: ["Drama", "Comedy"], tags: ["Satire", "Marriage", "Scandinavian"], ratings: { story: 91, acting: 89, lookFeel: 92, music: 74, enjoyment: 88 }, bme: [87, 91, 89], mood: { thriller: 10, romcom: 15, comedy: 90, horror: 0, drama: 90 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPV3AF7BIS5wYUiR1My8hPrgCBEbwL9f0wQA&s" },
+  { id: "the-square-2017", title: "The Square", year: 2017, director: "Ruben Östlund", cinematographer: "Fredrik Wenzel", script: "Ruben Östlund", budget: "$5m", length: "2h 31m", cast: ["Claes Bang", "Elisabeth Moss", "Dominic West"], genre: ["Drama", "Comedy"], tags: ["Satire", "Art World", "Awkward"], ratings: { story: 88, acting: 90, lookFeel: 93, music: 72, enjoyment: 85 }, bme: [84, 89, 86], mood: { thriller: 10, romcom: 5, comedy: 100, horror: 0, drama: 80 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLDldJH0QH-JQV45tAKKDSCr8VQ3_kpw5jijDAnj6Qe8mHsHRZ_-KuVhURyf_THeBY2htD&s=10" },
+  { id: "soapdish-1991", title: "Soapdish", year: 1991, director: "Michael Hoffman", cinematographer: "Ueli Steiger", script: "Robert Harling", budget: "$18m", length: "1h 37m", cast: ["Sally Field", "Kevin Kline", "Robert Downey Jr.", "Whoopi Goldberg"], genre: ["Comedy"], tags: ["Hollywood", "Satire", "Ensemble"], ratings: { story: 79, acting: 88, lookFeel: 78, music: 70, enjoyment: 87 }, bme: [82, 86, 88], mood: { thriller: 10, romcom: 5, comedy: 90, horror: 0, drama: 20 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSg9jPZdhGgAGyerL__4fmYZvPvqHcYBkRLybpZ5jS1SPUZd9eZrPS2fObnTHTNIbmtmaCGMQ&s=10" },
+  { id: "clue-1985", title: "Clue", year: 1985, director: "Jonathan Lynn", cinematographer: "Victor J. Kemper", script: "Jonathan Lynn", budget: "$15m", length: "1h 34m", cast: ["Tim Curry", "Madeline Kahn", "Christopher Lloyd", "Michael McKean"], genre: ["Comedy", "Mystery"], tags: ["Cult", "Whodunit", "Ensemble"], ratings: { story: 84, acting: 92, lookFeel: 82, music: 76, enjoyment: 94 }, bme: [90, 94, 95], mood: { thriller: 30, romcom: 5, comedy: 80, horror: 5, drama: 20 }, poster: "tmdb:15196" },
+  { id: "the-firm-1993", title: "The Firm", year: 1993, director: "Sydney Pollack", cinematographer: "John Seale", script: "David Rabe, Robert Towne, David Rayfiel", budget: "$42m", length: "2h 34m", cast: ["Tom Cruise", "Jeanne Tripplehorn", "Gene Hackman", "Ed Harris"], genre: ["Thriller", "Drama"], tags: ["Legal", "Conspiracy"], ratings: { story: 88, acting: 89, lookFeel: 85, music: 83, enjoyment: 91 }, bme: [87, 91, 92], mood: { thriller: 95, romcom: 5, comedy: 5, horror: 0, drama: 100 }, poster: "tmdb:37233" },
+  { id: "kiss-kiss-bang-bang-2005", title: "Kiss Kiss Bang Bang", year: 2005, director: "Shane Black", cinematographer: "Michael Barrett", script: "Shane Black", budget: "$15m", length: "1h 43m", cast: ["Robert Downey Jr.", "Val Kilmer", "Michelle Monaghan"], genre: ["Crime", "Comedy", "Mystery"], tags: ["Neo-Noir", "Hollywood", "Witty"], ratings: { story: 89, acting: 92, lookFeel: 87, music: 80, enjoyment: 95 }, bme: [90, 94, 95], mood: { thriller: 65, romcom: 5, comedy: 85, horror: 0, drama: 35 }, poster: "tmdb:5236" },
+  { id: "good-night-and-good-luck-2005", title: "Good Night, and Good Luck.", year: 2005, director: "George Clooney", cinematographer: "Robert Elswit", script: "George Clooney, Grant Heslov", budget: "$7m", length: "1h 33m", cast: ["David Strathairn", "George Clooney", "Patricia Clarkson"], genre: ["Drama", "History"], tags: ["Journalism", "Politics", "Black and White"], ratings: { story: 91, acting: 92, lookFeel: 93, music: 78, enjoyment: 87 }, bme: [88, 92, 89], mood: { thriller: 10, romcom: 5, comedy: 5, horror: 0, drama: 100 }, poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p89817_p_v8_ac.jpg" },
+  { id: "wonder-boys-2000", title: "Wonder Boys", year: 2000, director: "Curtis Hanson", cinematographer: "Dante Spinotti", script: "Steve Kloves", budget: "$35m", length: "1h 51m", cast: ["Michael Douglas", "Tobey Maguire", "Frances McDormand", "Robert Downey Jr."], genre: ["Drama", "Comedy"], tags: ["Writers", "Academia"], ratings: { story: 88, acting: 91, lookFeel: 84, music: 82, enjoyment: 89 }, bme: [86, 90, 89], mood: { thriller: 10, romcom: 5, comedy: 75, horror: 0, drama: 80 }, poster: "tmdb:786" },
+  { id: "bowfinger-1999", title: "Bowfinger", year: 1999, director: "Frank Oz", cinematographer: "Ueli Steiger", script: "Steve Martin", budget: "$55m", length: "1h 37m", cast: ["Steve Martin", "Eddie Murphy", "Heather Graham"], genre: ["Comedy"], tags: ["Hollywood", "Satire"], ratings: { story: 84, acting: 90, lookFeel: 78, music: 72, enjoyment: 92 }, bme: [88, 92, 93], mood: { thriller: 10, romcom: 5, comedy: 90, horror: 0, drama: 20 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQzsIne6TQv2fq4wKPeYawC97JHKq6B6qA8tEy273NvpSiOloNyM5-1Z8zawxfLlofCQOReg&s=10" },
+  { id: "short-cuts-1993", title: "Short Cuts", year: 1993, director: "Robert Altman", cinematographer: "Walt Lloyd", script: "Robert Altman, Frank Barhydt", budget: "$14m", length: "3h 8m", cast: ["Tim Robbins", "Julianne Moore", "Matthew Modine", "Jennifer Jason Leigh"], genre: ["Drama", "Comedy"], tags: ["Ensemble", "Los Angeles"], ratings: { story: 92, acting: 95, lookFeel: 88, music: 76, enjoyment: 89 }, bme: [88, 94, 90], mood: { thriller: 10, romcom: 5, comedy: 75, horror: 0, drama: 80 }, poster: "tmdb:26670" },
+  { id: "chaplin-1992", title: "Chaplin", year: 1992, director: "Richard Attenborough", cinematographer: "Sven Nykvist", script: "William Boyd, Bryan Forbes, William Goldman", budget: "$31m", length: "2h 23m", cast: ["Robert Downey Jr.", "Dan Aykroyd", "Geraldine Chaplin"], genre: ["Biography", "Drama"], tags: ["Hollywood", "Historical"], ratings: { story: 87, acting: 96, lookFeel: 89, music: 84, enjoyment: 87 }, bme: [85, 92, 88], mood: { thriller: 10, romcom: 5, comedy: 5, horror: 0, drama: 100 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpSMAWlZyTocq6nrVjBHjqFMCPuBEjiSdEBxgskEiSaFfRrHKwHcUwQrKF0o6e5VpZtu9NBw&s=10" },
+  { id: "the-dirties-2013", title: "The Dirties", year: 2013, director: "Matt Johnson", cinematographer: "Jared Raab", script: "Matt Johnson", budget: "$0.01m", length: "1h 23m", cast: ["Matt Johnson", "Owen Williams"], genre: ["Drama", "Comedy"], tags: ["Found Footage", "Dark"], ratings: { story: 85, acting: 84, lookFeel: 78, music: 68, enjoyment: 82 }, bme: [80, 86, 83], mood: { thriller: 30, romcom: 5, comedy: 75, horror: 30, drama: 80 }, poster: "https://m.media-amazon.com/images/M/MV5BMjk5OTcyNDQ3M15BMl5BanBnXkFtZTgwMTk3NDgyMDE@._V1_FMjpg_UX1000_.jpg" },
+  { id: "operation-avalanche-2016", title: "Operation Avalanche", year: 2016, director: "Matt Johnson", cinematographer: "Jared Raab", script: "Matt Johnson, Josh Boles", budget: "$0.5m", length: "1h 34m", cast: ["Matt Johnson", "Owen Williams", "Josh Boles"], genre: ["Comedy", "Thriller"], tags: ["Conspiracy", "Mockumentary"], ratings: { story: 84, acting: 82, lookFeel: 84, music: 70, enjoyment: 85 }, bme: [82, 86, 86], mood: { thriller: 95, romcom: 5, comedy: 75, horror: 0, drama: 40 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOM7xNrShi5U-QDIzXmy650b3GqfVrz9bH4mLbc9rmY_N3VTJjvp2M6VTVMFpLvjqhUa0XNQ&s=10" },
+  { id: "dirty-rotten-scoundrels-1988", title: "Dirty Rotten Scoundrels", year: 1988, director: "Frank Oz", cinematographer: "Michael Ballhaus", script: "Dale Launer, Stanley Shapiro, Paul Henning", budget: "$13m", length: "1h 50m", cast: ["Steve Martin", "Michael Caine", "Glenne Headly"], genre: ["Comedy"], tags: ["Con Artists", "Riviera"], ratings: { story: 88, acting: 92, lookFeel: 82, music: 74, enjoyment: 95 }, bme: [91, 95, 96], mood: { thriller: 10, romcom: 5, comedy: 75, horror: 0, drama: 20 }, poster: "tmdb:10141" },
+  { id: "deconstructing-harry-1997", title: "Deconstructing Harry", year: 1997, director: "Woody Allen", cinematographer: "Carlo Di Palma", script: "Woody Allen", budget: "$20m", length: "1h 36m", cast: ["Woody Allen", "Judy Davis", "Kirstie Alley", "Billy Crystal"], genre: ["Comedy", "Drama"], tags: ["Writers", "Neurotic", "Satire"], ratings: { story: 89, acting: 91, lookFeel: 79, music: 70, enjoyment: 87 }, bme: [85, 90, 88], mood: { thriller: 10, romcom: 5, comedy: 90, horror: 0, drama: 80 }, poster: "https://m.media-amazon.com/images/M/MV5BNDEyMzNhZTQtMmJkNC00ZWRkLWE1YjEtNzRkZGY5YWFiZmVjXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg" },
+  { id: "home-for-the-holidays-1995", title: "Home for the Holidays", year: 1995, director: "Jodie Foster", cinematographer: "Lajos Koltai", script: "W.D. Richter", budget: "$20m", length: "1h 43m", cast: ["Holly Hunter", "Robert Downey Jr.", "Anne Bancroft"], genre: ["Comedy", "Drama"], tags: ["Family", "Thanksgiving"], ratings: { story: 84, acting: 89, lookFeel: 80, music: 76, enjoyment: 86 }, bme: [84, 88, 87], mood: { thriller: 10, romcom: 5, comedy: 80, horror: 0, drama: 90 }, poster: "tmdb:9089" },
+  { id: "the-miracle-worker-1962", title: "The Miracle Worker", year: 1962, director: "Arthur Penn", cinematographer: "Ernesto Caparrós", script: "William Gibson", budget: "$0.5m", length: "1h 46m", cast: ["Anne Bancroft", "Patty Duke"], genre: ["Drama", "Biography"], tags: ["Education", "Perseverance"], ratings: { story: 94, acting: 98, lookFeel: 84, music: 68, enjoyment: 90 }, bme: [90, 96, 92], mood: { thriller: 10, romcom: 5, comedy: 5, horror: 0, drama: 100 }, poster: "tmdb:43040" },
+  { id: "the-graduate-1967", title: "The Graduate", year: 1967, director: "Mike Nichols", cinematographer: "Robert Surtees", script: "Calder Willingham, Buck Henry", budget: "$3m", length: "1h 46m", cast: ["Dustin Hoffman", "Anne Bancroft", "Katharine Ross"], genre: ["Drama", "Comedy", "Romance"], tags: ["Coming of Age", "Classic"], ratings: { story: 95, acting: 94, lookFeel: 91, music: 96, enjoyment: 94 }, bme: [92, 96, 95], mood: { thriller: 10, romcom: 80, comedy: 75, horror: 0, drama: 100 }, poster: "tmdb:37247" },
+  { id: "antz-1998", title: "Antz", year: 1998, director: "Eric Darnell, Tim Johnson", cinematographer: "", script: "Todd Alcott, Chris Weitz, Paul Weitz", budget: "$60m", length: "1h 23m", cast: ["Woody Allen", "Sharon Stone", "Gene Hackman", "Sylvester Stallone"], genre: ["Animation", "Comedy", "Adventure"], tags: ["Family", "Satire"], ratings: { story: 80, acting: 83, lookFeel: 79, music: 75, enjoyment: 84 }, bme: [82, 84, 85], mood: { thriller: 10, romcom: 5, comedy: 100, horror: 0, drama: 30 }, poster: "tmdb:8916" },
+  { id: "waking-ned-devine-1998", title: "Waking Ned Devine", year: 1998, director: "Kirk Jones", cinematographer: "Henry Braham", script: "Kirk Jones", budget: "$3m", length: "1h 31m", cast: ["Ian Bannen", "David Kelly", "Fionnula Flanagan"], genre: ["Comedy"], tags: ["Irish", "Small Town"], ratings: { story: 86, acting: 88, lookFeel: 83, music: 82, enjoyment: 91 }, bme: [88, 91, 92], mood: { thriller: 10, romcom: 5, comedy: 75, horror: 0, drama: 20 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUR7t-BJXX1qw5cxiOaA4a3eAsUHRjW-4mYZRqrad_lhMiDgkb_lapcdQ99fjxhilJnjFaEA&s=10" },
+  { id: "the-elephant-man-1980", title: "The Elephant Man", year: 1980, director: "David Lynch", cinematographer: "Freddie Francis", script: "Christopher De Vore, Eric Bergren, David Lynch", budget: "$5m", length: "2h 4m", cast: ["John Hurt", "Anthony Hopkins", "Anne Bancroft"], genre: ["Drama", "Biography"], tags: ["Humanity", "Black and White"], ratings: { story: 96, acting: 97, lookFeel: 95, music: 84, enjoyment: 93 }, bme: [93, 97, 95], mood: { thriller: 10, romcom: 5, comedy: 5, horror: 0, drama: 100 }, poster: "tmdb:1955" },
+  { id: "silent-movie-1976", title: "Silent Movie", year: 1976, director: "Mel Brooks", cinematographer: "Paul Lohmann", script: "Mel Brooks, Ron Clark, Rudy De Luca", budget: "$4m", length: "1h 27m", cast: ["Mel Brooks", "Marty Feldman", "Dom DeLuise"], genre: ["Comedy"], tags: ["Hollywood", "Parody"], ratings: { story: 78, acting: 86, lookFeel: 76, music: 72, enjoyment: 88 }, bme: [84, 88, 89], mood: { thriller: 10, romcom: 5, comedy: 95, horror: 0, drama: 20 }, poster: "https://upload.wikimedia.org/wikipedia/en/thumb/6/65/Silent_movie_movie_poster.jpg/250px-Silent_movie_movie_poster.jpg" },
+  { id: "the-night-of-the-iguana-1964", title: "The Night of the Iguana", year: 1964, director: "John Huston", cinematographer: "Gabriel Figueroa", script: "Anthony Veiller, John Huston", budget: "$3m", length: "2h 5m", cast: ["Richard Burton", "Ava Gardner", "Deborah Kerr"], genre: ["Drama"], tags: ["Literary", "Psychological"], ratings: { story: 89, acting: 94, lookFeel: 88, music: 72, enjoyment: 86 }, bme: [84, 91, 87], mood: { thriller: 25, romcom: 5, comedy: 5, horror: 0, drama: 90 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiJCbYehgaU1f3I6JhCnFvvFqn0T_7pOD1CTyLvPxCZblURerf9rGndlq6kVWA1u3kqqx5CQ&s=10" },
+  { id: "the-night-of-the-hunter-1955", title: "The Night of the Hunter", year: 1955, director: "Charles Laughton", cinematographer: "Stanley Cortez", script: "James Agee", budget: "$0.8m", length: "1h 33m", cast: ["Robert Mitchum", "Shelley Winters", "Lillian Gish"], genre: ["Thriller", "Drama", "Film Noir"], tags: ["Expressionist", "Classic"], ratings: { story: 95, acting: 94, lookFeel: 99, music: 82, enjoyment: 92 }, bme: [91, 97, 94], mood: { thriller: 100, romcom: 5, comedy: 5, horror: 0, drama: 100 }, poster: "https://static.tvtropes.org/pmwiki/pub/images/the_night_of_the_hunter_3.png" },
+  { id: "sicario-2015", title: "Sicario", year: 2015, director: "Denis Villeneuve", cinematographer: "Roger Deakins", script: "Taylor Sheridan", budget: "$30m", length: "2h 1m", cast: ["Emily Blunt", "Benicio Del Toro", "Josh Brolin"], genre: ["Crime", "Thriller"], tags: ["Border", "Tension"], ratings: { story: 92, acting: 91, lookFeel: 98, music: 95, enjoyment: 93 }, bme: [91, 95, 94], mood: { thriller: 100, romcom: 5, comedy: 5, horror: 0, drama: 55 }, poster: "tmdb:273481" },
+  { id: "small-time-crooks-2000", title: "Small Time Crooks", year: 2000, director: "Woody Allen", cinematographer: "Zhao Fei", script: "Woody Allen", budget: "$24m", length: "1h 34m", cast: ["Woody Allen", "Tracey Ullman", "Hugh Grant"], genre: ["Comedy", "Crime"], tags: ["Heist", "Satire"], ratings: { story: 81, acting: 87, lookFeel: 76, music: 70, enjoyment: 86 }, bme: [82, 86, 87], mood: { thriller: 35, romcom: 5, comedy: 90, horror: 0, drama: 35 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwBqcWk3nR3_132LF2r9eSWLHUZvclndzZBRMTz8qocQ7Znsgsqf1xKpHwHsUsjYg2zupzlw&s=10" },
+  { id: "noises-off-1992", title: "Noises Off", year: 1992, director: "Peter Bogdanovich", cinematographer: "Tim Suhrstedt", script: "Marty Kaplan", budget: "$12m", length: "1h 41m", cast: ["Michael Caine", "Carol Burnett", "John Ritter", "Christopher Reeve"], genre: ["Comedy"], tags: ["Farce", "Theatre", "Ensemble"], ratings: { story: 84, acting: 93, lookFeel: 78, music: 72, enjoyment: 94 }, bme: [89, 94, 95], mood: { thriller: 10, romcom: 5, comedy: 95, horror: 0, drama: 20 }, poster: "tmdb:26670" },
+  { id: "the-producers-1967", title: "The Producers", year: 1967, director: "Mel Brooks", cinematographer: "Joseph Coffey", script: "Mel Brooks", budget: "$0.9m", length: "1h 28m", cast: ["Zero Mostel", "Gene Wilder", "Dick Shawn"], genre: ["Comedy"], tags: ["Satire", "Broadway", "Cult"], ratings: { story: 91, acting: 95, lookFeel: 79, music: 82, enjoyment: 95 }, bme: [92, 96, 96], mood: { thriller: 10, romcom: 5, comedy: 95, horror: 5, drama: 20 }, poster: "tmdb:30197" },
+  { id: "some-like-it-hot-1959", title: "Some Like It Hot", year: 1959, director: "Billy Wilder", cinematographer: "Charles Lang", script: "Billy Wilder, I.A.L. Diamond", budget: "$2.9m", length: "2h 1m", cast: ["Marilyn Monroe", "Tony Curtis", "Jack Lemmon"], genre: ["Comedy", "Romance"], tags: ["Classic", "Cross-Dressing", "Screwball"], ratings: { story: 96, acting: 97, lookFeel: 90, music: 84, enjoyment: 98 }, bme: [95, 98, 99], mood: { thriller: 10, romcom: 85, comedy: 95, horror: 0, drama: 30 }, poster: "tmdb:239" },
+  { id: "one-two-three-1961", title: "One, Two, Three", year: 1961, director: "Billy Wilder", cinematographer: "Daniel Fapp", script: "Billy Wilder, I.A.L. Diamond", budget: "$4m", length: "1h 48m", cast: ["James Cagney", "Horst Buchholz", "Pamela Tiffin"], genre: ["Comedy"], tags: ["Cold War", "Satire", "Rapid Fire"], ratings: { story: 89, acting: 92, lookFeel: 84, music: 75, enjoyment: 92 }, bme: [90, 93, 93], mood: { thriller: 10, romcom: 5, comedy: 90, horror: 0, drama: 20 }, poster: "https://m.media-amazon.com/images/M/MV5BYjVlOTAxZDctMmM1Ny00ZGIwLTgwYTItZjIwYjAxNDg5OWFlXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg" },
+  { id: "close-encounters-of-the-third-kind-1977", title: "Close Encounters of the Third Kind", year: 1977, director: "Steven Spielberg", cinematographer: "Vilmos Zsigmond", script: "Steven Spielberg", budget: "$20m", length: "2h 18m", cast: ["Richard Dreyfuss", "François Truffaut", "Melinda Dillon"], genre: ["Science Fiction", "Drama"], tags: ["Aliens", "Wonder", "Spielberg"], ratings: { story: 92, acting: 88, lookFeel: 97, music: 98, enjoyment: 93 }, bme: [90, 95, 94], mood: { thriller: 20, romcom: 5, comedy: 5, horror: 0, drama: 85 }, poster: "tmdb:840" },
+  { id: "i-heart-huckabees-2004", title: "I Heart Huckabees", year: 2004, director: "David O. Russell", cinematographer: "Peter Deming", script: "David O. Russell, Jeff Baena", budget: "$22m", length: "1h 47m", cast: ["Jason Schwartzman", "Dustin Hoffman", "Lily Tomlin", "Mark Wahlberg"], genre: ["Comedy", "Drama"], tags: ["Existential", "Philosophy", "Quirky"], ratings: { story: 87, acting: 90, lookFeel: 84, music: 80, enjoyment: 86 }, bme: [84, 89, 87], mood: { thriller: 10, romcom: 5, comedy: 75, horror: 0, drama: 95 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSH01z0oHUWlpDX08zxo_IDQqDEIZrnprAWPSEOJxuVYwQjmfiPBMpVsNnfM5g1Fo9AH8mp&s=10" },
+  { id: "elle-2016", title: "Elle", year: 2016, director: "Paul Verhoeven", cinematographer: "Stéphane Fontaine", script: "David Birke", budget: "$9m", length: "2h 10m", cast: ["Isabelle Huppert", "Laurent Lafitte", "Anne Consigny"], genre: ["Drama", "Thriller"], tags: ["Psychological", "French", "Dark Comedy"], ratings: { story: 91, acting: 98, lookFeel: 88, music: 76, enjoyment: 87 }, bme: [86, 93, 88], mood: { thriller: 100, romcom: 5, comedy: 15, horror: 0, drama: 100 }, poster: "https://m.media-amazon.com/images/M/MV5BMTc5NDI5MzA1OF5BMl5BanBnXkFtZTgwMTQzNTQwMDI@._V1_FMjpg_UX1000_.jpg" },
+  { id: "moonlight-2016", title: "Moonlight", year: 2016, director: "Barry Jenkins", cinematographer: "James Laxton", script: "Barry Jenkins", budget: "$4m", length: "1h 51m", cast: ["Trevante Rhodes", "Mahershala Ali", "Naomie Harris"], genre: ["Drama"], tags: ["Coming of Age", "Identity"], ratings: { story: 97, acting: 96, lookFeel: 95, music: 93, enjoyment: 94 }, bme: [94, 98, 95], mood: { thriller: 10, romcom: 15, comedy: 10, horror: 0, drama: 95 }, poster: "tmdb:376867" },
+  { id: "the-book-of-life-1998", title: "The Book of Life", year: 1998, director: "Hal Hartley", cinematographer: "Michael Spiller", script: "Hal Hartley", budget: "$1m", length: "1h 3m", cast: ["Martin Donovan", "P.J. Harvey", "Thomas Jay Ryan"], genre: ["Comedy", "Drama", "Fantasy"], tags: ["Apocalypse", "Independent", "Satire"], ratings: { story: 82, acting: 84, lookFeel: 81, music: 88, enjoyment: 80 }, bme: [79, 83, 81], mood: { thriller: 15, romcom: 10, comedy: 70, horror: 0, drama: 70 }, poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGwf3MldPzrDBQDvsHlI-DPPFX6xKFDVzyqU0V2qg9lxgEud8sf19GZkWeDrXa8WOzsp9B&s=10" },
+  { id: "fireworks-1997", title: "Fireworks", year: 1997, director: "Takeshi Kitano", cinematographer: "Hideo Yamamoto", script: "Takeshi Kitano", budget: "$2m", length: "1h 43m", cast: ["Takeshi Kitano", "Kayoko Kishimoto", "Ren Osugi"], genre: ["Crime", "Drama", "Thriller"], tags: ["Japanese", "Melancholic", "Yakuza"], ratings: { story: 93, acting: 91, lookFeel: 95, music: 94, enjoyment: 90 }, bme: [89, 94, 91], mood: { thriller: 80, romcom: 5, comedy: 10, horror: 15, drama: 90 }, poster: "https://m.media-amazon.com/images/M/MV5BNThmZmJhYjktNzVlOC00YTRkLWEyZmEtNTk1NTA2NzQ3ODI3XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg" },
+  { id: "lady-bird-2017", title: "Lady Bird", year: 2017, director: "Greta Gerwig", cinematographer: "Sam Levy", script: "Greta Gerwig", budget: "$10m", length: "1h 34m", cast: ["Saoirse Ronan", "Laurie Metcalf", "Lucas Hedges"], genre: ["Drama", "Comedy"], tags: ["Coming of Age", "Family"], ratings: { story: 93, acting: 95, lookFeel: 88, music: 84, enjoyment: 92 }, bme: [90, 94, 92], mood: { thriller: 5, romcom: 35, comedy: 75, horror: 0, drama: 85 }, poster: "tmdb:391713" },
+  { id: "ex-machina-2015", title: "Ex Machina", year: 2015, director: "Alex Garland", cinematographer: "Rob Hardy", script: "Alex Garland", budget: "$15m", length: "1h 48m", cast: ["Domhnall Gleeson", "Alicia Vikander", "Oscar Isaac"], genre: ["Science Fiction", "Thriller"], tags: ["AI", "Minimalist"], ratings: { story: 74, acting: 91, lookFeel: 95, music: 89, enjoyment: 93 }, bme: [92, 95, 94], mood: { thriller: 95, romcom: 5, comedy: 5, horror: 25, drama: 55 }, poster: "tmdb:264660" },
+  { id: "the-lighthouse-2019", title: "The Lighthouse", year: 2019, director: "Robert Eggers", cinematographer: "Jarin Blaschke", script: "Robert Eggers, Max Eggers", budget: "$11m", length: "1h 49m", cast: ["Robert Pattinson", "Willem Dafoe"], genre: ["Drama", "Horror"], tags: ["Psychological", "Black and White"], ratings: { story: 88, acting: 98, lookFeel: 99, music: 85, enjoyment: 87 }, bme: [86, 94, 89], mood: { thriller: 65, romcom: 0, comedy: 20, horror: 90, drama: 85 }, poster: "tmdb:503919" },
+  { id: "uncut-gems-2019", title: "Uncut Gems", year: 2019, director: "Josh Safdie, Benny Safdie", cinematographer: "Darius Khondji", script: "Ronald Bronstein, Josh Safdie, Benny Safdie", budget: "$19m", length: "2h 15m", cast: ["Adam Sandler", "Julia Fox", "Lakeith Stanfield"], genre: ["Crime", "Thriller"], tags: ["Anxiety", "New York"], ratings: { story: 91, acting: 95, lookFeel: 92, music: 94, enjoyment: 90 }, bme: [89, 95, 91], mood: { thriller: 98, romcom: 5, comedy: 15, horror: 5, drama: 45 }, poster: "tmdb:473033" },
+  { id: "hereditary-2018", title: "Hereditary", year: 2018, director: "Ari Aster", cinematographer: "Pawel Pogorzelski", script: "Ari Aster", budget: "$10m", length: "2h 7m", cast: ["Toni Collette", "Alex Wolff", "Milly Shapiro"], genre: ["Horror", "Drama"], tags: ["Psychological", "Family"], ratings: { story: 90, acting: 96, lookFeel: 94, music: 88, enjoyment: 89 }, bme: [88, 93, 90], mood: { thriller: 70, romcom: 0, comedy: 0, horror: 95, drama: 85 }, poster: "tmdb:493922" },
+  { id: "midsommar-2019", title: "Midsommar", year: 2019, director: "Ari Aster", cinematographer: "Pawel Pogorzelski", script: "Ari Aster", budget: "$9m", length: "2h 28m", cast: ["Florence Pugh", "Jack Reynor", "Will Poulter"], genre: ["Horror", "Drama"], tags: ["Folk Horror", "Daylight"], ratings: { story: 87, acting: 91, lookFeel: 97, music: 89, enjoyment: 88 }, bme: [86, 92, 89], mood: { thriller: 65, romcom: 5, comedy: 10, horror: 95, drama: 85 }, poster: "tmdb:530385" },
+  { id: "the-witch-2015", title: "The Witch", year: 2015, director: "Robert Eggers", cinematographer: "Jarin Blaschke", script: "Robert Eggers", budget: "$4m", length: "1h 32m", cast: ["Anya Taylor-Joy", "Ralph Ineson", "Kate Dickie"], genre: ["Horror", "Drama"], tags: ["Folk Horror", "Atmospheric"], ratings: { story: 88, acting: 90, lookFeel: 96, music: 84, enjoyment: 85 }, bme: [84, 90, 86], mood: { thriller: 55, romcom: 0, comedy: 0, horror: 92, drama: 80 }, poster: "tmdb:310131" }
+
   ];
 
   const RATING_FIELDS = [
@@ -1784,6 +786,14 @@
     { key: 'lookFeel',  label: 'Look / Feel', cls: 'look',   cssClass: 'slider-look'   },
     { key: 'music',     label: 'Music',       cls: 'music',  cssClass: 'slider-music'  },
     { key: 'enjoyment', label: 'Enjoyment',   cls: 'enjoy',  cssClass: 'slider-enjoy'  },
+  ];
+
+  const MOOD_FIELDS = [
+    { key: 'thriller', label: 'Thriller', cls: 'mood-thriller' },
+    { key: 'romcom',   label: 'Romcom',   cls: 'mood-romcom'   },
+    { key: 'comedy',   label: 'Comedy',   cls: 'mood-comedy'   },
+    { key: 'horror',   label: 'Horror',   cls: 'mood-horror'   },
+    { key: 'drama',    label: 'Drama',    cls: 'mood-drama'    },
   ];
 
   let activeGenres = new Set();
@@ -1849,7 +859,13 @@
   const clsMap = { story: 'story', acting: 'acting', lookFeel: 'look', music: 'music', enjoyment: 'enjoy' };
 
   let bars = {};
-  RATING_FIELDS.forEach(f => { bars[f.key] = 1; });  // start: 1 bar each = 5 used, 20 remaining
+  RATING_FIELDS.forEach(f => { bars[f.key] = 1; });
+
+  // Mood bars — separate 25-point pool, same mechanics
+  const MOOD_POOL = 25;
+  const MOOD_BARS_PER = 10;
+  let moodBars = {};
+  MOOD_FIELDS.forEach(f => { moodBars[f.key] = 0; });  // start: 1 bar each = 5 used, 20 remaining
   // sliderRanges is still used by getFilteredFilms; sync it from bars
   RATING_FIELDS.forEach(f => { sliderRanges[f.key] = [0, 100]; });
 
@@ -1879,8 +895,6 @@
   }
 
   // Build UI
-  const slidersContainer = document.getElementById('rating-sliders');
-
   function buildBarLines(key, container, count, isPool) {
     container.innerHTML = '';
     const total = isPool ? POOL_BARS : BARS_PER;
@@ -1891,81 +905,95 @@
     }
   }
 
-  function renderAllBars() {
-    RATING_FIELDS.forEach(({ key }) => {
-      const chart = document.getElementById(`barchart-${key}`);
-      const val   = document.getElementById(`barval-${key}`);
-      if (chart) buildBarLines(key, chart, bars[key], false);
-      if (val)   val.textContent = barsToThreshold(bars[key]);
+  // ── MOOD BAR BUILDER ──
+  function totalMoodUsed() {
+    return MOOD_FIELDS.reduce((s, { key }) => s + moodBars[key], 0);
+  }
+
+  function stealOneMood(skipKey) {
+    let maxKey = null, maxVal = -1;
+    MOOD_FIELDS.forEach(({ key }) => {
+      if (key !== skipKey && moodBars[key] > maxVal) { maxVal = moodBars[key]; maxKey = key; }
     });
-    const pool = document.getElementById('pool-chart');
-    if (pool) buildBarLines(null, pool, POOL_BARS - totalUsed(), true);
-    const poolVal = document.getElementById('pool-val');
-    if (poolVal) poolVal.textContent = `${POOL_BARS - totalUsed()}`;
-    syncSliderRanges();
+    if (maxKey !== null && moodBars[maxKey] > 0) { moodBars[maxKey]--; return true; }
+    return false;
+  }
+
+  function renderAllMoodBars() {
+    MOOD_FIELDS.forEach(({ key }) => {
+      const chart = document.getElementById(`moodchart-${key}`);
+      if (chart) buildBarLines(key, chart, moodBars[key], false);
+    });
+    const pool = document.getElementById('mood-pool-chart');
+    if (pool) buildBarLines(null, pool, MOOD_POOL - totalMoodUsed(), true);
+    const poolVal = document.getElementById('mood-pool-val');
+    if (poolVal) poolVal.textContent = `${MOOD_POOL - totalMoodUsed()}`;
     render();
   }
 
-  RATING_FIELDS.forEach(({ key, label, cls }) => {
-    const barCls = clsMap[key];
+  const moodContainer = document.getElementById('mood-sliders');
+
+  MOOD_FIELDS.forEach(({ key, label, cls }) => {
     const row = document.createElement('div');
-    row.className = `bar-row bar-${barCls}`;
+    row.className = `bar-row mood-bar ${cls}`;
     row.innerHTML = `
       <div class="bar-row-header">
         <span class="bar-row-label ${cls}">${label}</span>
-        <span class="bar-row-val" id="barval-${key}">${barsToThreshold(bars[key])}</span>
       </div>
-      <div class="bar-chart" id="barchart-${key}"></div>`;
-    slidersContainer.appendChild(row);
+      <div class="bar-chart" id="moodchart-${key}"></div>`;
+    moodContainer.appendChild(row);
 
-    const chart = row.querySelector(`#barchart-${key}`);
-    buildBarLines(key, chart, bars[key], false);
+    const chart = row.querySelector(`#moodchart-${key}`);
+    buildBarLines(key, chart, moodBars[key], false);
 
     chart.addEventListener('click', e => {
       const rect = chart.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const isRight = x >= rect.width / 2;
-
+      const isRight = (e.clientX - rect.left) >= rect.width / 2;
       if (isRight) {
-        // Increase: need a free point from the pool
-        if (bars[key] < BARS_PER) {
-          if (totalUsed() < TOTAL_POOL) {
-            bars[key]++;
-          } else {
-            // Steal from the largest other category
-            if (stealOne(key)) bars[key]++;
-          }
+        if (moodBars[key] < MOOD_BARS_PER) {
+          if (totalMoodUsed() < MOOD_POOL) { moodBars[key]++; }
+          else { if (stealOneMood(key)) moodBars[key]++; }
         }
       } else {
-        // Decrease
-        if (bars[key] > 0) bars[key]--;
+        if (moodBars[key] > 0) moodBars[key]--;
       }
-      renderAllBars();
+      renderAllMoodBars();
     });
   });
 
-  // Pool summary strip
-  const poolWrap = document.createElement('div');
-  poolWrap.className = 'bar-pool-wrap';
-  poolWrap.innerHTML = `
+  // Mood pool strip
+  const moodPoolWrap = document.createElement('div');
+  moodPoolWrap.className = 'bar-pool-wrap';
+  moodPoolWrap.innerHTML = `
     <div class="bar-pool-header">
       <span class="bar-pool-label">Total</span>
-      <span class="bar-pool-val" id="pool-val">${POOL_BARS - totalUsed()}</span>
+      <span class="bar-pool-val" id="mood-pool-val">${MOOD_POOL}</span>
     </div>
-    <div class="bar-pool-chart" id="pool-chart"></div>`;
-  slidersContainer.appendChild(poolWrap);
-  buildBarLines(null, poolWrap.querySelector('#pool-chart'), POOL_BARS - totalUsed(), true);
+    <div class="bar-pool-chart" id="mood-pool-chart"></div>`;
+  moodContainer.appendChild(moodPoolWrap);
+  buildBarLines(null, moodPoolWrap.querySelector('#mood-pool-chart'), MOOD_POOL - totalMoodUsed(), true);
 
   function getFilteredFilms() {
-    return FILMS_DATA.filter(film => {
+    const filtered = FILMS_DATA.filter(film => {
       for (const genre of activeGenres) { if (!film.genre.includes(genre)) return false; }
       for (const tag   of activeTags)   { if (!film.tags.includes(tag))    return false; }
-      for (const { key } of RATING_FIELDS) {
-        const threshold = barsToThreshold(bars[key]);
-        if (film.ratings[key] < threshold) return false;
+      for (const { key } of MOOD_FIELDS) {
+        const threshold = barsToThreshold(moodBars[key]);
+        if ((film.mood ? film.mood[key] : 0) < threshold) return false;
       }
       return true;
     });
+
+    // Sort by weighted score: each rating weighted by its bar count
+    // so dragging Story bars up pushes high-Story films to the front
+    const totalBars = RATING_FIELDS.reduce((s, { key }) => s + bars[key], 0) || 1;
+    filtered.sort((a, b) => {
+      const scoreA = RATING_FIELDS.reduce((s, { key }) => s + a.ratings[key] * bars[key], 0) / totalBars;
+      const scoreB = RATING_FIELDS.reduce((s, { key }) => s + b.ratings[key] * bars[key], 0) / totalBars;
+      return scoreB - scoreA;
+    });
+
+    return filtered;
   }
 
   function renderBmeSparkline(bme) {
@@ -1997,7 +1025,7 @@
     const lastName = parts.pop();
     const firstInitial = parts.length > 0 ? parts[0][0] + '.' : '';
     const directorDisplay = firstInitial ? `${firstInitial} ${lastName}` : lastName;
-    return `<div class="film-card-grid">
+    return `<div class="film-card-grid" data-id="${film.id}">
       <div class="film-poster-wrap">${posterHTML}</div>
       <div class="film-card-body">
         <div class="film-card-text">
@@ -2032,7 +1060,32 @@
   function filtersActive() {
     if (activeGenres.size > 0 || activeTags.size > 0) return true;
     // Default is 10 bars each — only "active" if any differ from default
-    return RATING_FIELDS.some(({ key }) => bars[key] !== 1);
+    return RATING_FIELDS.some(({ key }) => bars[key] !== 1) || MOOD_FIELDS.some(({ key }) => moodBars[key] !== 0);
+  }
+
+  // ── FLIP animation helpers ──
+  function recordPositions(container) {
+    const map = {};
+    container.querySelectorAll('[data-id]').forEach(el => {
+      const r = el.getBoundingClientRect();
+      map[el.dataset.id] = { x: r.left, y: r.top };
+    });
+    return map;
+  }
+
+  function playFlip(container, before) {
+    container.querySelectorAll('[data-id]').forEach(el => {
+      const id = el.dataset.id;
+      if (!before[id]) return; // new card — just fade in
+      const r = el.getBoundingClientRect();
+      const dx = before[id].x - r.left;
+      const dy = before[id].y - r.top;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return; // didn't move
+      el.animate([
+        { transform: `translate(${dx}px, ${dy}px)`, opacity: 0.6 },
+        { transform: 'translate(0, 0)', opacity: 1 }
+      ], { duration: 380, easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)', fill: 'none' });
+    });
   }
 
   function render() {
@@ -2047,10 +1100,21 @@
     }
     empty.classList.add('hidden');
     if (currentView === 'grid') {
+      // Snapshot positions before re-render
+      const before = recordPositions(grid);
+      const prevIds = new Set([...grid.querySelectorAll('[data-id]')].map(el => el.dataset.id));
+      const newIds  = new Set(films.map(f => f.id));
+      const sameSet = films.length === prevIds.size && films.every(f => prevIds.has(f.id));
+
       grid.innerHTML = films.map(renderGridCard).join('');
       list.innerHTML = '';
       grid.classList.remove('hidden');
       list.classList.add('hidden');
+
+      // Only FLIP-animate if the same cards are present (reordering), not when adding/removing
+      if (sameSet && Object.keys(before).length > 0) {
+        playFlip(grid, before);
+      }
     } else {
       list.innerHTML = films.map(renderListCard).join('');
       grid.innerHTML = '';
@@ -2059,6 +1123,8 @@
     }
     cascadeImages();
   }
+
+  let firstLoad = true;
 
   function cascadeImages() {
     const STAGGER = 40;
@@ -2069,6 +1135,13 @@
     container.querySelectorAll('.film-poster-wrap').forEach((wrap, i) => {
       const img = wrap.querySelector('img');
       if (!img) return;
+
+      if (!firstLoad) {
+        // After first load: reveal immediately, no cascade
+        img.classList.add('loaded');
+        wrap.classList.add('img-loaded');
+        return;
+      }
 
       const reveal = () => {
         setTimeout(() => {
@@ -2086,6 +1159,12 @@
         }, { once: true });
       }
     });
+
+    if (firstLoad) {
+      // Mark first load done after all stagger timers would have fired
+      const cardCount = container.querySelectorAll('.film-poster-wrap').length;
+      setTimeout(() => { firstLoad = false; }, cardCount * STAGGER + 600);
+    }
   }
 
   function setView(v) {
@@ -2100,7 +1179,8 @@
     document.querySelectorAll('#genre-list .tag-chip').forEach(c => c.classList.remove('active'));
     buildTagChips();
     RATING_FIELDS.forEach(({ key }) => { bars[key] = 1; });
-    renderAllBars();
+    MOOD_FIELDS.forEach(({ key }) => { moodBars[key] = 0; });
+    renderAllMoodBars();
     render();
   }
 
